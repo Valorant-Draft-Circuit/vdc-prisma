@@ -1,0 +1,5 @@
+# Ignore all compiled & generated files. #######################
+*.js
+!prismadb.js
+# These will be compiled/generated locally & on deployment #####
+################################################################
