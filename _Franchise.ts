@@ -65,6 +65,9 @@ export class Franchise {
                     { Teams: { some: { id: teamID } } },
                     { Teams: { some: { name: teamName } } }
                 ]
+            },
+            include: {
+                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
             }
         })
 
