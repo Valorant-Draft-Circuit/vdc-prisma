@@ -25,8 +25,6 @@ model Account {
   User              User    @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
   MMR               MMR?
   UserAccount       User?   @relation("PrimaryRiotAccount")
-
-  @@index([userId], map: "Account_userId_fkey")
 }
 
 model Session {
@@ -35,35 +33,32 @@ model Session {
   userId       String
   expires      DateTime
   User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId], map: "Session_userId_fkey")
 }
 
 model User {
   id                   String        @id
   name                 String?
+    // discord name
   team                 Int?
   primaryRiotAccountID String?       @unique
   email                String?       @unique
   emailVerified        DateTime?
   image                String?
   roles                String        @default("0x0")
+  Status               Status?       @relation("PlayerStatus")
+  Team                 Teams?        @relation(fields: [team], references: [id])
   Accolades            Accolades[]
-  accounts             Account[]     @relation("Accounts")
-  Draft                Draft?
-  AGM1                 Franchise?    @relation("AGM1")
-  AGM2                 Franchise?    @relation("AGM2")
-  GM                   Franchise?    @relation("GM")
+  Records              Records[]
   PlayerStats          PlayerStats[] @relation("UserPlayerStats")
   Substitutes          Substitute[]
-  Records              Records[]
-  sessions             Session[]
-  Status               Status?       @relation("PlayerStatus")
-  Captain              Team?         @relation("Captain")
+  Draft                Draft?
+  Captain              Teams?        @relation("Captain")
+  GM                   Franchise?    @relation("GM")
+  AGM1                 Franchise?    @relation("AGM1")
+  AGM2                 Franchise?    @relation("AGM2")
   PrimaryRiotAccount   Account?      @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
-  Team                 Team?         @relation(fields: [team], references: [id])
-
-  @@index([team], map: "User_team_fkey")
+  Accounts             Account[]     @relation("Accounts")
+  sessions             Session[]
 }
 
 model VerificationToken {
@@ -79,8 +74,6 @@ model Accolades {
   tier     Tier
   accolade String
   Player   User?   @relation(fields: [userID], references: [id])
-
-  @@index([userID], map: "Accolades_userID_fkey")
 }
 
 model Records {
@@ -90,27 +83,24 @@ model Records {
   tier   Tier
   record String
   Player User?   @relation(fields: [userID], references: [id])
-
-  @@index([userID], map: "Records_userID_fkey")
 }
 
-model Team {
-  id          Int           @id @unique @default(autoincrement())
-  name        String
-  tier        Tier
-  active      Boolean       @default(true)
-  franchise   Int
-  captain     String?       @unique
-  AwayGames   Games[]       @relation("AwayGames")
-  HomeGames   Games[]       @relation("HomeGames")
-  PlayerStats PlayerStats[]
-  Substitutes Substitute[]
-  Captain     User?         @relation("Captain", fields: [captain], references: [id])
-  Franchise   Franchise     @relation(fields: [franchise], references: [id])
-  TeamStats   TeamStats[]
-  Roster      User[]
-
-  @@index([franchise], map: "Team_franchise_fkey")
+model Teams {
+  id                 Int           @id @unique @default(autoincrement())
+  name               String
+  tier               Tier
+  active             Boolean       @default(true)
+  franchise          Int
+  captain            String?       @unique
+  midSeasonPlacement Int?
+  Franchise          Franchise     @relation(fields: [franchise], references: [id])
+  Captain            User?         @relation("Captain", fields: [captain], references: [id])
+  Roster             User[]
+  HomeMatches        Matches[]     @relation("HomeMatches")
+  AwayMatches        Matches[]     @relation("AwayMatches")
+  PlayerStats        PlayerStats[]
+  TeamStats          TeamStats[]
+  Substitutes        Substitute[]
 }
 
 model Franchise {
@@ -122,12 +112,12 @@ model Franchise {
   gmID       String?         @unique
   agm1ID     String?         @unique
   agm2ID     String?         @unique
-  DraftPicks Draft[]
+  GM         User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   AGM1       User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
   AGM2       User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
-  GM         User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
+  Teams      Teams[]
   Brand      FranchiseBrand?
-  Teams      Team[]
+  DraftPicks Draft[]
 }
 
 model FranchiseBrand {
@@ -148,9 +138,11 @@ model MMR {
   numRanked     Int?
   numCombines   Int?
   numLastSeason Int?
-  mmrBase       Int?
-  mmrEffective  Int?
-  mmrSeason     Int?
+  mmrCombines   Float?
+  mmrRanked     Float?
+  mmrBase       Float?
+  mmrEffective  Float?
+  mmrSeason     Float?
   Account       Account @relation(fields: [id], references: [mmr], onDelete: Cascade)
 }
 
@@ -163,43 +155,38 @@ model Substitute {
   User   User         @relation(fields: [userID], references: [id])
   Stats  PlayerStats?
   Game   Games?       @relation(fields: [gameID], references: [gameID])
-  Team   Team?        @relation(fields: [team], references: [id])
-
-  @@index([gameID], map: "Substitute_gameID_fkey")
-  @@index([team], map: "Substitute_team_fkey")
+  Team   Teams?       @relation(fields: [team], references: [id])
 }
 
 model Matches {
-  matchID String   @id @unique @default(uuid())
-  date    DateTime @updatedAt
-  tier    Tier
-  Games   Games[]
+  matchID       Int       @id @unique @default(autoincrement())
+  tier          Tier
+  matchType     MatchType
+  dateScheduled DateTime
+  home          Int?
+  away          Int?
+  Home          Teams?    @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
+  Away          Teams?    @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
+  Games         Games[]
 }
 
 model Games {
-  id            Int           @id @unique @default(autoincrement())
-  gameID        String?       @unique
-  matchID       String?
+  gameID        String        @id @unique
+  // Forfeits will submit a datetime as the unique ID, and fill in the gameType as FORFEIT
+  // Invalid matches include matches that do NOT have ONLY VDC players in the database or out of tier matches
+  matchID       Int?
   season        Int           @default(6)
   tier          Tier
   gameType      GameType
-  date          DateTime      @updatedAt
-  home          Int?
-  away          Int?
+  datePlayed    DateTime      @updatedAt
   winner        Int
   rounds        Int
   roundsWonHome Int
   roundsWonAway Int
-  Away          Team?         @relation("AwayGames", fields: [away], references: [id], map: "Away_Team")
   Match         Matches?      @relation(fields: [matchID], references: [matchID])
-  Home          Team?         @relation("HomeGames", fields: [home], references: [id], map: "Home_Team")
   PlayerStats   PlayerStats[] @relation("GamePlayerStats")
-  Substitutes   Substitute[]
   TeamStats     TeamStats[]   @relation("GameTeamStats")
-
-  @@index([matchID], map: "Games_matchID_fkey")
-  @@index([home], map: "Home_Team")
-  @@index([away], map: "gamesWon")
+  Substitutes   Substitute[]
 }
 
 model PlayerStats {
@@ -208,6 +195,7 @@ model PlayerStats {
   gameID        String
   team          Int
   agent         Agent
+    // Use enums - ex. Agent.Chamber
   ratingAttack  Float?
   ratingDefense Float?
   acs           Int?
@@ -230,14 +218,10 @@ model PlayerStats {
   flex2         String?     @db.VarChar(255)
   flex3         String?     @db.VarChar(255)
   substituteID  Int?        @unique
-  Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
-  Team          Team        @relation(fields: [team], references: [id])
   Player        User        @relation("UserPlayerStats", fields: [userID], references: [id])
+  Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
+  Team          Teams       @relation(fields: [team], references: [id])
   Substitute    Substitute? @relation(fields: [substituteID], references: [id])
-
-  @@index([gameID], map: "GamePlayerStats")
-  @@index([team], map: "PlayerStats_team_fkey")
-  @@index([userID], map: "PlayerStats_userID_fkey")
 }
 
 model TeamStats {
@@ -260,10 +244,7 @@ model TeamStats {
   flex15 String? @db.VarChar(255)
   flex16 String? @db.VarChar(255)
   Game   Games?  @relation("GameTeamStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GameTeamStats")
-  Team   Team?   @relation(fields: [team], references: [id])
-
-  @@index([gameID], map: "GameTeamStats")
-  @@index([team], map: "TeamStats_team_fkey")
+  Team   Teams?  @relation(fields: [team], references: [id])
 }
 
 model Status {
@@ -285,8 +266,6 @@ model Draft {
   franchise Int?
   Franchise Franchise? @relation(fields: [franchise], references: [id])
   Player    User?      @relation(fields: [userID], references: [id])
-
-  @@index([franchise], map: "Draft_franchise_fkey")
 }
 
 model FAQ {
@@ -308,6 +287,14 @@ enum Tier {
   Apprentice
   Expert
   Mythic
+  FFA
+  // Used in non-tier bound combines
+}
+
+enum MatchType {
+  BO2
+  MID_PLAYOFF
+  END_PLAYOFF
 }
 
 enum GameType {
