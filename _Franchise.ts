@@ -24,7 +24,7 @@ export class Franchise {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify only 1 option!`);
 
-        return await prisma.team.findMany({
+        return await prisma.teams.findMany({
             where: {
                 Franchise: {
                     OR: [
@@ -64,7 +64,6 @@ export class Franchise {
                     { slug: slug },
                     { Teams: { some: { id: teamID } } },
                     { Teams: { some: { name: teamName } } }
-
                 ]
             }
         })

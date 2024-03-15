@@ -21,7 +21,7 @@ export class Team {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        return await prisma.team.findFirst({
+        return await prisma.teams.findFirst({
             where: {
                 OR: [
                     { id: id },
@@ -42,7 +42,7 @@ export class Team {
         const { id, name } = option;
 
         return {
-            team: await prisma.team.findFirst({
+            team: await prisma.teams.findFirst({
                 where: {
                     OR: [
                         { name: name },
@@ -57,13 +57,13 @@ export class Team {
                         { team: id },
                     ]
                 },
-                include: { accounts: true }
+                include: { Accounts: true }
             })
         }
     };
 
     static async getAllActiveByTier(tier: Tier) {
-        return await prisma.team.findMany({
+        return await prisma.teams.findMany({
             where: { AND: [{ tier: tier }, { active: true }] },
             include: { Franchise: true }
         })

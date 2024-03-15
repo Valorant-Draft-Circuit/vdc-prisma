@@ -56,15 +56,15 @@ export class Games {
                         OR: [
                             { gameType: type },
                             { tier: tier },
-                            { Home: { Franchise: { id: franchise } } },
-                            { Away: { Franchise: { id: franchise } } },
-                            { home: team },
-                            { away: team },
+                            { Match: { Home: { Franchise: { id: franchise } } } },
+                            { Match: { Away: { Franchise: { id: franchise } } } },
+                            { Match: { home: team } },
+                            { Match: { away: team } },
                         ]
                     },
-                    { date: { not: undefined } },
-                    { home: { not: null } },
-                    { away: { not: null } },
+                    { datePlayed: { not: undefined } },
+                    { Match: { home: { not: null } } },
+                    { Match: { away: { not: null } } },
                     { winner: { not: undefined } },
                 ]
             }
