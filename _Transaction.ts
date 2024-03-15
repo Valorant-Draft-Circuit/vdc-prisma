@@ -1,4 +1,3 @@
-import { PlayerStatusCode, ContractStatus } from '../utils/enums';
 import { PrismaClient } from '@prisma/client';
 import { Player } from './_Player';
 
