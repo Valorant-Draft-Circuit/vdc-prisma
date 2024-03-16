@@ -14,7 +14,7 @@ model Account {
   provider          String
   providerAccountId String  @unique
   refresh_token     String?
-  access_token      String?
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
