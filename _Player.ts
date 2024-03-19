@@ -44,49 +44,52 @@ export class Player {
     //  */
     // static async getStatsBy(option: { discordID?: string; riotID?: string; ign?: string } | undefined) {
 
-        // if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
-        // if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+    // if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
+    // if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        // const { discordID, riotID, ign } = option;
+    // const { discordID, riotID, ign } = option;
 
-        // return await prisma.playerStats.findMany({
-        //     where: {
-        //         AND: [
-        //             {U},
-        //             { Game: { gameType: { equals: GameType.SEASON } } }
-        //         ]
-        //     }
-        // })
+    // return await prisma.playerStats.findMany({
+    //     where: {
+    //         AND: [
+    //             {U},
+    //             { Game: { gameType: { equals: GameType.SEASON } } }
+    //         ]
+    //     }
+    // })
 
-        // return await prisma.playerStats.findMany({
-        //     where: {
-        //         AND: [
-        //             { Player: { OR: [{ id: discordID }, { primaryRiotID: riotID }, { Account: { riotID: ign } }] } },
-        //             { Games: { type: { contains: `Season` } } }
-        //         ]
-        //     },
-        //     include: { Player: { include: { Team: { include: { Franchise: true } } } } }
-        // })
+    // return await prisma.playerStats.findMany({
+    //     where: {
+    //         AND: [
+    //             { Player: { OR: [{ id: discordID }, { primaryRiotID: riotID }, { Account: { riotID: ign } }] } },
+    //             { Games: { type: { contains: `Season` } } }
+    //         ]
+    //     },
+    //     include: { Player: { include: { Team: { include: { Franchise: true } } } } }
+    // })
     // };
 
-    // static async getIGNby(option: { discordID: string; }) {
-    //     const playerAccount = await prisma.player.findFirst({
-    //         where: { id: option.discordID },
-    //         include: { Account: true }
-    //     })
+    static async getIGNby(option: {
+        discordID: string;
+    }) {
 
-    //     return playerAccount?.Account?.riotID;
-    // }
+        const playerAccount = await prisma.account.findFirst({
+            where: { providerAccountId: option.discordID },
+            include: { User: { include: { PrimaryRiotAccount: true } } }
+        })
 
-    // static async updateIGN(option: { puuid: string; newRiotID: string; }) {
-    //     const { puuid, newRiotID } = option;
-    //     if (Object.keys(option).length != 2) throw new Error(`Must specify both options!`);
+        return playerAccount?.User.PrimaryRiotAccount?.riotIGN;
+    }
 
-    //     return await prisma.account.update({
-    //         where: { providerAccountId: puuid },
-    //         data: { riotID: newRiotID }
-    //     });
-    // }
+    static async updateIGN(option: { puuid: string; newIGN: string; }) {
+        const { puuid, newIGN } = option;
+        if (Object.keys(option).length != 2) throw new Error(`Must specify both options!`);
+
+        return await prisma.account.update({
+            where: { providerAccountId: puuid },
+            data: { riotIGN: newIGN }
+        });
+    }
 
     /** Get a user by a specific option
      * @param {Object} option
