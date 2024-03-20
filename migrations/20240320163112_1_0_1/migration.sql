@@ -1,0 +1,5 @@
+-- DropForeignKey
+ALTER TABLE `MMR` DROP FOREIGN KEY `MMR_id_fkey`;
+
+-- AddForeignKey
+ALTER TABLE `Account` ADD CONSTRAINT `Account_mmr_fkey` FOREIGN KEY (`mmr`) REFERENCES `MMR`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
