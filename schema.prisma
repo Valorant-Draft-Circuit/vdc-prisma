@@ -99,6 +99,7 @@ model Teams {
   Roster             User[]
   HomeMatches        Matches[]     @relation("HomeMatches")
   AwayMatches        Matches[]     @relation("AwayMatches")
+  GamesWon           Games[]       @relation("GamesWon")
   PlayerStats        PlayerStats[]
   TeamStats          TeamStats[]
   Substitutes        Substitute[]
@@ -185,6 +186,7 @@ model Games {
   roundsWonHome Int
   roundsWonAway Int
   Match         Matches?      @relation(fields: [matchID], references: [matchID])
+  WinningTeam   Teams         @relation("GamesWon", fields: [winner], references: [id])
   PlayerStats   PlayerStats[] @relation("GamePlayerStats")
   TeamStats     TeamStats[]   @relation("GameTeamStats")
   Substitutes   Substitute[]

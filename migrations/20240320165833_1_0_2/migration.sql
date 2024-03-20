@@ -1,0 +1,2 @@
+-- AddForeignKey
+ALTER TABLE `Games` ADD CONSTRAINT `Games_winner_fkey` FOREIGN KEY (`winner`) REFERENCES `Teams`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
