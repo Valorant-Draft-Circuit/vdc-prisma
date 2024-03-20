@@ -4,4 +4,4 @@ This repo is a Typescript library to interface with the vdc development and prod
 ## Changelog
 | version | Comments/Updates |
 | - | - |
-| 1.0.0 | Initial Commit/Database Baseline |
+| `1.0.0` | Initial Commit/Database Baseline |

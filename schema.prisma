@@ -38,13 +38,14 @@ model Session {
 model User {
   id                   String        @id @default(cuid())
   name                 String?
-    // discord name
+  // discord name
   team                 Int?
   primaryRiotAccountID String?       @unique
   email                String?       @unique
   emailVerified        DateTime?
   image                String?
   roles                String        @default("0x0")
+  flags                String        @default("0x0")
   Status               Status?       @relation("PlayerStatus")
   Team                 Teams?        @relation(fields: [team], references: [id])
   Accolades            Accolades[]
@@ -195,7 +196,7 @@ model PlayerStats {
   gameID        String
   team          Int
   agent         Agent
-    // Use enums - ex. Agent.Chamber
+  // Use enums - ex. Agent.Chamber
   ratingAttack  Float?
   ratingDefense Float?
   acs           Int?
