@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
-
-const { PlayerStatusCode } = require(`../utils/enums`)
+import { Tier } from "@prisma/client";
+import { prisma } from "./prismadb";
 
 export class Team {
 
@@ -12,42 +10,61 @@ export class Team {
      * @param {?String} option.name
      * @param {?String} option.playerID
      */
-    static async getBy(option: { id?: number; name?: string; playerID?: string; }) {
+    static async getBy(option: {
+        id?: number;
+        name?: string;
+        playerID?: string;
+    }) {
+
         if (option == undefined) return new Error(`Must specify exactly 1 option!`);
         const { id, name, playerID } = option;
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        return await prisma.team.findFirst({
+        return await prisma.teams.findFirst({
             where: {
                 OR: [
-                    { id: id }, { name: name },
-                    // { Player: { some: { id: playerID } } }
+                    { id: id },
+                    { name: name },
+                    { Roster: { some: { id: playerID } } }
                 ]
             }
         });
     };
 
-    static async getRosterBy(option: { id?: number; name?: string; }) {
+    static async getRosterBy(option: {
+        name?: string;
+        id?: number;
+    }) {
         if (option == undefined) return new Error(`Must specify exactly 1 option!`);
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
         const { id, name } = option;
 
-        return await prisma.player.findMany({
-            where: {
-                OR: [
-                    { Team: { name: name } },
-                    { team: id },
-                ]
-            },
-            include: { Account: true, MMR_Player_MMRToMMR: true }
-        });
+        return {
+            team: await prisma.teams.findFirst({
+                where: {
+                    OR: [
+                        { name: name },
+                        { id: id },
+                    ]
+                },
+            }),
+            roster: await prisma.user.findMany({
+                where: {
+                    OR: [
+                        { Team: { name: name } },
+                        { team: id },
+                    ]
+                },
+                include: { Accounts: true }
+            })
+        }
     };
 
-    static async getAllActiveByTier(tier: `Prospect` | `Advanced` | `Expert` | `Mythic`) {
-        return await prisma.team.findMany({
-            where: { AND: [{ tier: tier }, { isActive: true }] },
+    static async getAllActiveByTier(tier: Tier) {
+        return await prisma.teams.findMany({
+            where: { AND: [{ tier: tier }, { active: true }] },
             include: { Franchise: true }
         })
     };

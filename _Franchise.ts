@@ -1,13 +1,12 @@
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
+import { prisma } from "./prismadb";
 
 export class Franchise {
 
     /** Get all active franchises */
     static async getAllActive() {
         return await prisma.franchise.findMany({
-            where: { isActive: true, },
-            include: { Team: true }
+            where: { active: true, },
+            include: { Teams: true }
         });
     };
 
@@ -25,17 +24,17 @@ export class Franchise {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify only 1 option!`);
 
-        let franchise: { id?: number; name?: string; slug?: string; logoFileName?: string | null; isActive?: boolean; } | null = {};
-
-        if (id) franchise = await getFranchiseByID(id);
-        if (name) franchise = await getFranchiseByName(name);
-        if (slug) franchise = await getFranchiseBySlug(slug);
-
-        if (franchise == null) return undefined;
-
-        return await prisma.team.findMany({
-            where: { franchise: franchise.id, isActive: true },
-        });
+        return await prisma.teams.findMany({
+            where: {
+                Franchise: {
+                    OR: [
+                        { id: id },
+                        { name: name },
+                        { slug: slug }
+                    ]
+                }
+            }
+        })
     };
 
     /** Get a franchise by a specific option
@@ -57,66 +56,21 @@ export class Franchise {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        if (id) return await getFranchiseByID(id);
-        if (name) return await getFranchiseByName(name);
-        if (slug) return await getFranchiseBySlug(slug);
-        if (teamID) return await getFranchiseByTeamID(teamID);
-        if (teamName) return await getFranchiseByTeamName(teamName);
+        return await prisma.franchise.findFirst({
+            where: {
+                OR: [
+                    { id: id },
+                    { name: name },
+                    { slug: slug },
+                    { Teams: { some: { id: teamID } } },
+                    { Teams: { some: { name: teamName } } }
+                ]
+            },
+            include: {
+                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+            }
+        })
 
     };
-}
-
-/** Get a franchise by it's id
- * @param id Franchise ID
- * @returns 
- */
-async function getFranchiseByID(id: number) {
-    return await prisma.franchise.findUnique({
-        where: { id: id }
-    })
-}
-
-/** Get a franchise by it's name
- * @param {number} name The franchise's name (i.e. Solaris)
- */
-async function getFranchiseByName(name: string) {
-    return await prisma.franchise.findFirst({
-        where: { name: name }
-    })
-}
-
-/** Get a franchise by it's slug
- * @param {string} slug The franchise's slug (i.e. SOL, OS, etc.)]
- */
-async function getFranchiseBySlug(slug: string) {
-    return await prisma.franchise.findUnique({
-        where: { slug: slug }
-    });
-}
-
-/** Get a franchise by the name of one of it's teams
- * @param id Team ID
- */
-async function getFranchiseByTeamID(teamID: number) {
-    const id = await prisma.team.findUnique({
-        where: { id: teamID },
-        select: { franchise: true }
-    });
-
-    if (id == null) return undefined;
-    return await getFranchiseByID(id.franchise)
-}
-
-/** Get a franchise by the name of one of it's teams
- * @param name Team name
- */
-async function getFranchiseByTeamName(teamName: string) {
-    const id = await prisma.team.findUnique({
-        where: { name: teamName },
-        select: { franchise: true }
-    });
-
-    if (id == null) return undefined;
-    return await getFranchiseByID(id.franchise)
 }
 
