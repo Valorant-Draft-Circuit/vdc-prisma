@@ -36,38 +36,40 @@ export class Player {
         })
     };
 
-    // /** Get a player's stats by a specific option (Must include at least one)
-    //  * @param {Object} option
-    //  * @param {?Number} option.name
-    //  * @param {?String} option.discordID
-    //  * @param {?String} option.riotID
-    //  */
-    // static async getStatsBy(option: { discordID?: string; riotID?: string; ign?: string } | undefined) {
+    /** Get a player's stats by a specific option (Must include at least one)
+     * @param {Object} option
+     * @param {?Number} option.ign
+     * @param {?String} option.discordID
+     * @param {?String} option.riotPUUID
+     */
+    static async getStatsBy(option: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    } | undefined) {
 
-    // if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
-    // if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+        if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
+        if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-    // const { discordID, riotID, ign } = option;
+        const { ign, discordID, riotPUUID } = option;
 
-    // return await prisma.playerStats.findMany({
-    //     where: {
-    //         AND: [
-    //             {U},
-    //             { Game: { gameType: { equals: GameType.SEASON } } }
-    //         ]
-    //     }
-    // })
-
-    // return await prisma.playerStats.findMany({
-    //     where: {
-    //         AND: [
-    //             { Player: { OR: [{ id: discordID }, { primaryRiotID: riotID }, { Account: { riotID: ign } }] } },
-    //             { Games: { type: { contains: `Season` } } }
-    //         ]
-    //     },
-    //     include: { Player: { include: { Team: { include: { Franchise: true } } } } }
-    // })
-    // };
+        return await prisma.playerStats.findMany({
+            where: {
+                AND: [
+                    {
+                        Player: {
+                            OR: [
+                                { PrimaryRiotAccount: { riotIGN: ign } },
+                                { Accounts: { some: { providerAccountId: discordID } } },
+                                { Accounts: { some: { providerAccountId: riotPUUID } } },
+                            ]
+                        }
+                    },
+                    { Game: { gameType: { equals: GameType.SEASON } } }
+                ]
+            }
+        });
+    };
 
     static async getIGNby(option: {
         discordID: string;
@@ -95,30 +97,38 @@ export class Player {
      * @param {Object} option
      * @param {?Number} option.ign
      * @param {?String} option.discordID
-     * @param {?String} option.riotID
+     * @param {?String} option.riotPUUID
      */
-    // static async getBy(option: {
-    //     ign?: string;
-    //     discordID?: string;
-    //     riotID?: string;
-    //     accountID?: string // THIS NEEDS TO CHANGE... TO WHAT?
-    // } | undefined) {
+    static async getBy(option: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    } | undefined) {
 
-    //     if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
-    //     const { ign, discordID, riotID, accountID } = option;
+        if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
+        if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-    //     if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+        const { ign, discordID, riotPUUID } = option;
 
-    //     return await prisma.user.findFirst({
-    //         where: {
-    //             OR: [
-    //                 { accounts: { some: { riotIGN: ign } } },
-    //                 { accounts: { some: { providerAccountId: discordID } } },
-    //                 { accounts: { some: { providerAccountId: riotID } } },
-    //             ]
-    //         }
-    //     })
-    // };
+
+        return await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { Accounts: { some: { riotIGN: ign } } },
+                    { Accounts: { some: { providerAccountId: discordID } } },
+                    { Accounts: { some: { providerAccountId: riotPUUID } } },
+                ]
+            },
+            include: {
+                PrimaryRiotAccount: true,
+                Accounts: true,
+                Status: true,
+                Team: true,
+                Accolades: true,
+                Records: true
+            }
+        })
+    };
 
     // static async updateBy(option: {
     //     userIdentifier: { ign?: string; discordID?: string; riotID?: string; accountID: string },
