@@ -145,6 +145,7 @@ model MMR {
   mmrBase       Float?
   mmrEffective  Float?
   mmrSeason     Float?
+  lastPulled    DateTime?
   Account       Account? @relation("MMR")
 }
 
