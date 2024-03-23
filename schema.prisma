@@ -203,10 +203,12 @@ model PlayerStats {
   ratingAttack  Float?
   ratingDefense Float?
   acs           Int?
+  kast          Int?
   hsPercent     Float?
   kills         Int?
   deaths        Int?
   assists       Int?
+  damage        Int?
   firstKills    Int?
   firstDeaths   Int?
   plants        Int?
@@ -216,6 +218,7 @@ model PlayerStats {
   ecoKills      Int?
   ecoDeaths     Int?
   antiEcoKills  Int?
+  antiEcoDeaths Int?
   exitKills     Int?
   clutches      Int?
   flex1         String?     @db.VarChar(255)
