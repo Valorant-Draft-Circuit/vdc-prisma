@@ -108,26 +108,31 @@ export class Player {
         if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
+        const includeParams = {
+            PrimaryRiotAccount: true,
+            Accounts: true,
+            Status: true,
+            Team: true,
+            Accolades: true,
+            Records: true
+        }
+
         const { ign, discordID, riotPUUID } = option;
 
+        if (ign) return await prisma.user.findFirst({
+            where: { Accounts: { some: { riotIGN: ign } } },
+            include: includeParams
+        });
 
-        return await prisma.user.findFirst({
-            where: {
-                OR: [
-                    { Accounts: { some: { riotIGN: ign } } },
-                    { Accounts: { some: { providerAccountId: discordID } } },
-                    { Accounts: { some: { providerAccountId: riotPUUID } } },
-                ]
-            },
-            include: {
-                PrimaryRiotAccount: true,
-                Accounts: true,
-                Status: true,
-                Team: true,
-                Accolades: true,
-                Records: true
-            }
-        })
+        if (discordID) return await prisma.user.findFirst({
+            where: { Accounts: { some: { providerAccountId: discordID } } },
+            include: includeParams
+        });
+
+        if (riotPUUID) return await prisma.user.findFirst({
+            where: { Accounts: { some: { providerAccountId: riotPUUID } } },
+            include: includeParams
+        });
     };
 
     // static async updateBy(option: {
@@ -142,4 +147,70 @@ export class Player {
     //         data: option.updateParamaters
     //     });
     // }
+
+    public static async getFlags(playerIdentifier: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    }) {
+
+        if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
+        if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
+
+        const player = await Player.getBy(playerIdentifier);
+
+        if (!player) return undefined;
+        else return Number(player.flags)
+    }
+
+    public static async setFlags(playerIdentifier: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    }, flags: number) {
+        
+        if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
+        if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
+
+        const player = await Player.getBy(playerIdentifier);
+        
+        if (!player) return undefined;
+        else return await prisma.user.update({
+            where: { id: player.id },
+            data: { flags: `0x${flags.toString(16)}` }
+        })
+    }
+
+
+    public static async getRoles(playerIdentifier: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    }) {
+
+        if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
+        if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
+
+        const player = await Player.getBy(playerIdentifier);
+        if (!player) return undefined;
+        else return Number(player.roles)
+    }
+
+    public static async setRoles(playerIdentifier: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    }, roles: number) {
+
+        if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
+        if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
+
+        const player = await Player.getBy(playerIdentifier);
+
+        if (!player) return undefined;
+        else return await prisma.user.update({
+            where: { id: player.id },
+            data: { roles: `0x${roles.toString(16)}` }
+        })
+    }
 };
