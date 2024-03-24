@@ -182,12 +182,12 @@ model Games {
   tier          Tier
   gameType      GameType
   datePlayed    DateTime      @updatedAt
-  winner        Int
+  winner        Int?
   rounds        Int
   roundsWonHome Int
   roundsWonAway Int
   Match         Matches?      @relation(fields: [matchID], references: [matchID])
-  WinningTeam   Teams         @relation("GamesWon", fields: [winner], references: [id])
+  WinningTeam   Teams?         @relation("GamesWon", fields: [winner], references: [id])
   PlayerStats   PlayerStats[] @relation("GamePlayerStats")
   TeamStats     TeamStats[]   @relation("GameTeamStats")
   Substitutes   Substitute[]
