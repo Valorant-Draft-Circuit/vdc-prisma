@@ -22,7 +22,7 @@ export enum Flags {
     /** @RESERVED               = 0x00040 */
     /** @RESERVED               = 0x00080 */
     /** @RESERVED               = 0x00100 */
-    /** @RESERVED               = 0x00200 */
+    REGISTERED_AS_RFA           = 0x00200,
 
     /* -----   NUMBERS PROCESSING FLAGS   ----- */
 
