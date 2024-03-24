@@ -4,6 +4,7 @@ This repo is a Typescript library to interface with the vdc development and prod
 ## Changelog
 | version | Comments/Updates |
 | - | - |
+| `1.2.1` | Made `team` and it's respective `Team` relation optional in the `PlayerStats` table |
 | `1.2.0` | Added `kast`, `damage` and `antiEcoDeaths` columns to the to `PlayerStats` table |
 | `1.1.1` | Added `APPROVED` enum to `LeagueStatus` |
 | `1.1.0` | Added `lastPulled` column to the `MMR` table with type `DateTime` and default `null` |

@@ -197,7 +197,7 @@ model PlayerStats {
   id            Int         @id @unique @default(autoincrement())
   userID        String
   gameID        String
-  team          Int
+  team          Int?
   agent         Agent
   // Use enums - ex. Agent.Chamber
   ratingAttack  Float?
@@ -227,7 +227,7 @@ model PlayerStats {
   substituteID  Int?        @unique
   Player        User        @relation("UserPlayerStats", fields: [userID], references: [id])
   Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
-  Team          Teams       @relation(fields: [team], references: [id])
+  Team          Teams?       @relation(fields: [team], references: [id])
   Substitute    Substitute? @relation(fields: [substituteID], references: [id])
 }
 
