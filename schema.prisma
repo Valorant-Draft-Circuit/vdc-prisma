@@ -337,6 +337,7 @@ enum Agent {
   Gekko
   Deadlock
   Iso
+  Clove
 }
 
 enum LeagueStatus {
