@@ -3,6 +3,7 @@
  * ## LEAGUE SPECIFIC FLAGS
  * @param {Number} ACTIVE_LAST_SEASON This player was an active player (Signed, FA, RFA) last season
  * @param {Number} ACTIVE_IN_PAST This player has been an active player in any past VDC season
+ * @param {Number} REGISTERED_AS_RFA This player is registering as an RFA for this season
  * 
  * 
  * ## NUMBERS PROCESSING FLAGS   

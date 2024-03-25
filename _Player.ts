@@ -1,5 +1,6 @@
 import { prisma } from "./prismadb";
 import { GameType, LeagueStatus } from "@prisma/client";
+import { Flags, Roles } from "./index"
 
 export class Player {
 
@@ -168,17 +169,33 @@ export class Player {
         discordID?: string;
         riotPUUID?: string;
     }, flags: number) {
-        
+
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
         if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
 
         const player = await Player.getBy(playerIdentifier);
-        
+
         if (!player) return undefined;
         else return await prisma.user.update({
             where: { id: player.id },
             data: { flags: `0x${flags.toString(16)}` }
         })
+    }
+
+    public static async toggleFlags(playerIdentifier: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    }, flag: Flags) {
+        if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
+        if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
+
+        const userFlags = await Player.getFlags(playerIdentifier);
+
+        if (typeof userFlags !== "number") throw new Error(`Did not get a valid player`);
+
+        const updatedUserFlags = userFlags ^ flag;
+        return await Player.setFlags(playerIdentifier, updatedUserFlags);
     }
 
 
@@ -212,5 +229,21 @@ export class Player {
             where: { id: player.id },
             data: { roles: `0x${roles.toString(16)}` }
         })
+    }
+
+    public static async toggleRoles(playerIdentifier: {
+        ign?: string;
+        discordID?: string;
+        riotPUUID?: string;
+    }, role: Roles) {
+        if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
+        if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
+
+        const userRoles = await Player.getRoles(playerIdentifier);
+
+        if (typeof userRoles !== "number") throw new Error(`Did not get a valid player`);
+
+        const updatedUserRoles = userRoles ^ role;
+        return await Player.setRoles(playerIdentifier, updatedUserRoles);
     }
 };
