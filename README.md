@@ -1,8 +1,22 @@
 # vdc-prisma
-This repo is a Typescript library to interface with the vdc development and production databases.
+This repository is a Typescript library to interface with the VDC development, staging and production databases.
 
-## Changelog
-| version | Comments/Updates |
+## Updating the database
+There are a few steps that need to be completed to update the database with changes.
+1. Create a backup of the development database using the `Export` tab in [`phpMyAdmin`](https://univps.vps.webdock.cloud/phpmyadmin/index.php)
+2. Update the [`./schema.prisma`](./schema.prisma) file with changes
+3. Run `npx prisma migrate dev -n x.x.x` where the "x.x.x" follows the `major.minor.patch` version naming convention. Major patches are denoted by adding new tables or significant sweeping updates, Minor updates are denoted by adding columns or sweeping patch updates, and all else will bump the patch number. If the `prisma migrate` command throws any issues, follow the substeps below, otherwise continue to step 4.
+    - Delete the migration file created by the `migrate dev` command (if applicable) from the [`migrations`](./migrations/) folder
+    - Reset the database using `npx prisma migrate reset`. This destroys the database, all it's data and rebuilds it from the migrations.
+    - Make changes, and repeat step 2 & 3 until the `prisma migrate dev` command runs successfully
+4. Update the [Changelog](#changelog) below with a comment of what has changed, and then send a message to the [`#updates`](https://discord.com/channels/1027754353207033966/1220564786765500477) channel with that same message. You can also copy & paste the following:
+    ```
+    New <@1220563705293574266> - `vX.X.X`
+    - UPDATE_MESSAGE
+    ```
+
+## Database Changelog
+| Version | Comments/Updates |
 | - | - |
 | `1.2.3` | Added `Clove` to `Agents` |
 | `1.2.2` | Made `winner` and it's respective `WinningTeam` relation optional in the `Games` table |
