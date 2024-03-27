@@ -1,17 +1,21 @@
-import { PrismaClient } from '@prisma/client';
+import { LeagueStatus, PrismaClient } from '@prisma/client';
 import { Player } from './_Player';
 
 const prisma = new PrismaClient();
 
 export class Transaction {
-    // static async updateStatus(options: { playerID: string, status: PlayerStatusCode }) {
-    //     return await prisma.player.update({
-    //         where: { id: options.playerID },
-    //         data: {
-    //             status: options.status
-    //         }
-    //     });
-    // };
+    static async updateStatus(
+        options: {
+            playerID: string,
+            status: LeagueStatus
+        }
+    ) {
+        const { playerID, status } = options;
+        return await prisma.account.update({
+            where: { providerAccountId: playerID },
+            data: { User: { update: { Status: { update: { leagueStatus: status } } } } }
+        })
+    };
 
     // static async sign(options: { playerID: string, teamID: number }) {
     //     const { playerID, teamID } = options;
