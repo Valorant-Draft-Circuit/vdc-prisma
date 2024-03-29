@@ -257,7 +257,7 @@ model TeamStats {
 model Status {
   userID            String          @id @unique
   leagueStatus      LeagueStatus    @default(UNREGISTERED)
-  ContractStatus    ContractStatus?
+  contractStatus    ContractStatus?
   contractRemaining Int?            @default(0)
   Player            User            @relation("PlayerStatus", fields: [userID], references: [id], onDelete: Cascade)
 }

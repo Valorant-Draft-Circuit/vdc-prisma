@@ -11,13 +11,14 @@ There are a few steps that need to be completed to update the database with chan
     - Make changes, and repeat step 2 & 3 until the `prisma migrate dev` command runs successfully
 4. Update the [Changelog](#changelog) below with a comment of what has changed, and then send a message to the [`#updates`](https://discord.com/channels/1027754353207033966/1220564786765500477) channel with that same message. You can also copy & paste the following:
     ```
-    New <@1220563705293574266> - `vX.X.X`
+    New <@&1220563705293574266> - `vX.X.X`
     - UPDATE_MESSAGE
     ```
 
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `1.2.4` | Changed `ContractStatus` to `contractStatus` in the `Status` table to follow convention for non-relational columns |
 | `1.2.3` | Added `Clove` to `Agents` |
 | `1.2.2` | Made `winner` and it's respective `WinningTeam` relation optional in the `Games` table |
 | `1.2.1` | Made `team` and it's respective `Team` relation optional in the `PlayerStats` table |
