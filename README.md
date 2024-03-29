@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `1.2.5` | Removed default value of `0` in the `contractRemaining` column of the `Status` table |
 | `1.2.4` | Changed `ContractStatus` to `contractStatus` in the `Status` table to follow convention for non-relational columns |
 | `1.2.3` | Added `Clove` to `Agents` |
 | `1.2.2` | Made `winner` and it's respective `WinningTeam` relation optional in the `Games` table |
