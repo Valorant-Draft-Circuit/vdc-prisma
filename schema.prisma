@@ -290,11 +290,11 @@ model ControlPanel {
 }
 
 enum Tier {
-  Prospect
-  Apprentice
-  Expert
-  Mythic
-  Mixed
+  PROSPECT
+  APPRENTICE
+  EXPERT
+  MYTHIC
+  MIXED
   // Used in non-tier bound combines
 }
 
