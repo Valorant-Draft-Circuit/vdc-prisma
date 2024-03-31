@@ -68,4 +68,11 @@ export class Team {
             include: { Franchise: true }
         })
     };
+
+    static async getAllActive() {
+        return await prisma.teams.findMany({
+            where: { active: true },
+            include: { Franchise: true }
+        })
+    };
 }

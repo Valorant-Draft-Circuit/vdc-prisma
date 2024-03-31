@@ -10,7 +10,7 @@ export class Player {
 
         return await prisma.user.findMany({
             where: { Status: { OR: orFilter } },
-            include: { Accounts: { where: { provider: `discord` } } }
+            include: { Accounts: { where: { provider: `discord` } }, PrimaryRiotAccount: { include: { MMR: true } } }
         })
     }
 
