@@ -56,21 +56,40 @@ export class Franchise {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        return await prisma.franchise.findFirst({
-            where: {
-                OR: [
-                    { id: id },
-                    { name: name },
-                    { slug: slug },
-                    { Teams: { some: { id: teamID } } },
-                    { Teams: { some: { name: teamName } } }
-                ]
-            },
+        if (id) return await prisma.franchise.findFirst({
+            where: { id: id },
             include: {
                 GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
             }
-        })
+        });
 
+        if (name) return await prisma.franchise.findFirst({
+            where: { name: name },
+            include: {
+                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+            }
+        });
+
+        if (slug) return await prisma.franchise.findFirst({
+            where: { slug: slug },
+            include: {
+                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+            }
+        });
+
+        if (teamID) return await prisma.franchise.findFirst({
+            where: { Teams: { some: { id: teamID } } },
+            include: {
+                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+            }
+        });
+
+        if (teamName) return await prisma.franchise.findFirst({
+            where: { Teams: { some: { name: teamName } } },
+            include: {
+                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+            }
+        });
     };
 }
 

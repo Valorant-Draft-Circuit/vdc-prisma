@@ -21,14 +21,16 @@ export class Team {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        return await prisma.teams.findFirst({
-            where: {
-                OR: [
-                    { id: id },
-                    { name: name },
-                    { Roster: { some: { id: playerID } } }
-                ]
-            }
+        if (id) return await prisma.teams.findFirst({
+            where: { id: id }
+        });
+
+        if (name) return await prisma.teams.findFirst({
+            where: { name: name }
+        });
+
+        if (playerID) return await prisma.teams.findFirst({
+            where: { Roster: { some: { id: playerID } } }
         });
     };
 
@@ -57,7 +59,7 @@ export class Team {
                         { team: id },
                     ]
                 },
-                include: { Accounts: true }
+                include: { Status: true, PrimaryRiotAccount: { include: { MMR: true } } }
             })
         }
     };
