@@ -2,20 +2,18 @@ import { prisma } from "./prismadb";
 import { GameType, Tier } from "@prisma/client";
 
 export class Games {
-    // static async saveMatch(options: { id: string, type: string }) {
-    //     const { id, type } = options;
+    static async saveMatch(options: {
+        id: string,
+        type: GameType,
+        tier: Tier
+    }) {
 
-    //     if (!/([a-z0-9]{8})-([a-z0-9]{4}-){3}([a-z0-9]{12})$/.test(id)) throw new Error(`Invalid Match ID!`);
-    //     fetch(`https://numbers.vdc.gg/game/season/process`, { method: `PUT` });
-    //     return await prisma.games.create({
-    //         data: {
-    //             gameID: id,
-    //             type: type,
-    //             seasonID: 5,
-    //             rounds_played: 1000
-    //         },
-    //     })
-    // };
+        const { id, type, tier } = options;
+
+        if (!/([a-z0-9]{8})-([a-z0-9]{4}-){3}([a-z0-9]{12})$/.test(id)) throw new Error(`Invalid Match ID!`);
+
+        return await fetch(`https://numbers.vdc.gg/game/submit?matchId=${id}&gameType=${type}&tier=${tier}`, { method: `GET` });
+    };
 
     static async exists(options: { id: string }) {
         const { id } = options;
