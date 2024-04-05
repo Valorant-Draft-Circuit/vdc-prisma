@@ -120,8 +120,8 @@ export class Player {
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
         const includeParams = {
-            PrimaryRiotAccount: true,
-            Accounts: true,
+            PrimaryRiotAccount: { include: { MMR: true } },
+            Accounts: { include: { MMR: true } },
             Status: true,
             Team: true,
             Accolades: true,
