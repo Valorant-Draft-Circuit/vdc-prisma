@@ -198,7 +198,7 @@ model PlayerStats {
   userID        String
   gameID        String
   team          Int?
-  agent         Agent
+  agent         String
   // Use enums - ex. Agent.Chamber
   ratingAttack  Float?
   ratingDefense Float?
@@ -311,33 +311,6 @@ enum GameType {
   SEASON
   FORFEIT
   PLAYOFF
-}
-
-enum Agent {
-  Brimstone
-  Phoenix
-  Sage
-  Sova
-  Viper
-  Cypher
-  Reyna
-  Killjoy
-  Breach
-  Omen
-  Jett
-  Raze
-  Skye
-  Yoru
-  Astra
-  KAYO
-  Chamber
-  Neon
-  Fade
-  Harbor
-  Gekko
-  Deadlock
-  Iso
-  Clove
 }
 
 enum LeagueStatus {
