@@ -22,15 +22,19 @@ export class Team {
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
         if (id) return await prisma.teams.findFirst({
-            where: { id: id }
+            where: { id: id },
+            include: { Franchise: { include: { Brand: true } } }
         });
 
         if (name) return await prisma.teams.findFirst({
-            where: { name: name }
+            where: { name: name },
+            include: { Franchise: { include: { Brand: true } } }
         });
 
         if (playerID) return await prisma.teams.findFirst({
-            where: { Roster: { some: { id: playerID } } }
+            where: { Roster: { some: { id: playerID } } },
+            include: { Franchise: { include: { Brand: true } } }
+
         });
     };
 

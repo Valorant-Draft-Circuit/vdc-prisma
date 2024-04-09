@@ -1,4 +1,4 @@
-import { LeagueStatus, PrismaClient } from '@prisma/client';
+import { ContractStatus, LeagueStatus, PrismaClient } from '@prisma/client';
 import { Player } from './_Player';
 
 const prisma = new PrismaClient();
@@ -17,6 +17,29 @@ export class Transaction {
         })
     };
 
+    static async cut(discordID: string) {
+        return await prisma.account.update({
+            where: { providerAccountId: discordID },
+            data: {
+                User: {
+                    update: {
+                        data: {
+                            team: null,
+                            Status: {
+                                update: {
+                                    leagueStatus: LeagueStatus.FREE_AGENT,
+                                    contractStatus: null,
+                                    contractRemaining: null,
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            include: { User: { include: { Status: true } } }
+        });
+    };
+
     // static async sign(options: { playerID: string, teamID: number }) {
     //     const { playerID, teamID } = options;
     //     return await prisma.player.update({
@@ -25,17 +48,6 @@ export class Transaction {
     //             team: teamID,
     //             status: PlayerStatusCode.SIGNED,
     //             contractStatus: ContractStatus.SIGNED,
-    //         }
-    //     })
-    // };
-
-    // static async cut(playerID: string) {
-    //     return await prisma.player.update({
-    //         where: { id: playerID },
-    //         data: {
-    //             team: null,
-    //             status: PlayerStatusCode.FREE_AGENT,
-    //             contractStatus: ContractStatus.FREE_AGENT,
     //         }
     //     })
     // };
