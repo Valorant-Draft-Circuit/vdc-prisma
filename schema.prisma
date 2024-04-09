@@ -126,6 +126,7 @@ model FranchiseBrand {
   id               Int        @id @unique @default(autoincrement())
   franchise        Int?       @unique
   logo             String?
+  discordEmote     String?
   colorPrimary     String?
   colorSecondary   String?
   description      String?
