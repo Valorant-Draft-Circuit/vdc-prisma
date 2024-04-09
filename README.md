@@ -18,7 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
-| `1.2.7` | Removed the `Agent` enum set and updated the `agent` column in `PlayerStats` from the `Agent` enum to `String` |
+| `1.2.7` | Removed the `Agent` enum set and updated the `agent` column data type in `PlayerStats` from the `Agent` enum to `String` |
 | `1.2.6` | Changed lowercase enums in the `Tier` enumerations (`Prospect`, `Apprentice`, `Expert`, `Mythic`, `Mixed`) to `PROSPECT`, `APPRENTICE`, `EXPERT`, `MYTHIC` and `MIXED` respectively to follow enumeration convention |
 | `1.2.5` | Removed default value of `0` in the `contractRemaining` column of the `Status` table |
 | `1.2.4` | Changed `ContractStatus` to `contractStatus` in the `Status` table to follow convention for non-relational columns |
