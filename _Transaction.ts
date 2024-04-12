@@ -40,17 +40,30 @@ export class Transaction {
         });
     };
 
-    // static async sign(options: { playerID: string, teamID: number }) {
-    //     const { playerID, teamID } = options;
-    //     return await prisma.player.update({
-    //         where: { id: playerID },
-    //         data: {
-    //             team: teamID,
-    //             status: PlayerStatusCode.SIGNED,
-    //             contractStatus: ContractStatus.SIGNED,
-    //         }
-    //     })
-    // };
+    static async sign(options: { discordID: string, teamID: number, isGM: boolean }) {
+        const { discordID, teamID, isGM } = options;
+        return await prisma.account.update({
+            where: { providerAccountId: discordID },
+            data: {
+                User: {
+                    update: {
+                        data: {
+                            team: teamID,
+                            Status: {
+                                update: {
+                                    leagueStatus: isGM ? LeagueStatus.GENERAL_MANAGER : LeagueStatus.SIGNED,
+                                    contractStatus: ContractStatus.SIGNED,
+                                    contractRemaining: 2,
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            include: { User: { include: { Status: true } } }
+
+        });
+    };
 
     static async renew(userID: string) {
         return await prisma.status.update({
