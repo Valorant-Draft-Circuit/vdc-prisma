@@ -52,14 +52,14 @@ export class Transaction {
     //     })
     // };
 
-    // static async renew(options: { playerID: string }) {
-    //     return await prisma.player.update({
-    //         where: { id: options.playerID },
-    //         data: {
-    //             contractStatus: ContractStatus.RENEWED,
-    //         }
-    //     })
-    // };
+    static async renew(userID: string) {
+        return await prisma.status.update({
+            where: { userID: userID },
+            data: {
+                contractRemaining: 1
+            }
+        });
+    };
 
     // static async updateTier(options: { playerID: string, teamID: number }) {
     //     return await prisma.player.update({
