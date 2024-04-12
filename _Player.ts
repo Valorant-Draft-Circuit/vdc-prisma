@@ -123,7 +123,7 @@ export class Player {
             PrimaryRiotAccount: { include: { MMR: true } },
             Accounts: { include: { MMR: true } },
             Status: true,
-            Team: true,
+            Team: { include: { Franchise: true } },
             Accolades: true,
             Records: true
         }
