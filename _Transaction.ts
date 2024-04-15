@@ -40,29 +40,22 @@ export class Transaction {
         });
     };
 
-    static async sign(options: { discordID: string, teamID: number, isGM: boolean }) {
-        const { discordID, teamID, isGM } = options;
-        return await prisma.account.update({
-            where: { providerAccountId: discordID },
+    static async sign(options: { userID: string, teamID: number, isGM: boolean }) {
+        const { userID, teamID, isGM } = options;
+        return await prisma.user.update({
+            where: { id: userID },
             data: {
-                User: {
+                team: teamID,
+                Status: {
                     update: {
-                        data: {
-                            team: teamID,
-                            Status: {
-                                update: {
-                                    leagueStatus: isGM ? LeagueStatus.GENERAL_MANAGER : LeagueStatus.SIGNED,
-                                    contractStatus: ContractStatus.SIGNED,
-                                    contractRemaining: 2,
-                                }
-                            }
-                        }
+                        leagueStatus: isGM ? LeagueStatus.GENERAL_MANAGER : LeagueStatus.SIGNED,
+                        contractStatus: ContractStatus.SIGNED,
+                        contractRemaining: 2,
                     }
                 }
             },
-            include: { User: { include: { Status: true } } }
-
-        });
+            include: { Status: true }
+        })
     };
 
     static async renew(userID: string) {
@@ -74,14 +67,12 @@ export class Transaction {
         });
     };
 
-    // static async updateTier(options: { playerID: string, teamID: number }) {
-    //     return await prisma.player.update({
-    //         where: { id: options.playerID },
-    //         data: {
-    //             team: options.teamID,
-    //         }
-    //     })
-    // };
+    static async updateTier(options: { userID: string, teamID: number }) {
+        return await prisma.user.update({
+            where: { id: options.userID },
+            data: { team: options.teamID }
+        });
+    };
 
     // static async sub(options: { playerID: string, teamID: number }) {
     //     const { playerID, teamID } = options;
@@ -108,24 +99,45 @@ export class Transaction {
     //     })
     // };
 
-    // static async toggleInactiveReserve(options: { playerID: string, toggle: `SET` | `REMOVE` }) {
-    //     const { playerID, toggle } = options;
+    static async toggleInactiveReserve(
+        options: { playerID: string, toggle: `SET` | `REMOVE` }
+    ) {
+        const { playerID, toggle } = options;
 
-    //     const contractStatus = toggle === `SET` ? ContractStatus.INACTIVE_RESERVE : ContractStatus.SIGNED;
-    //     return await prisma.player.update({
-    //         where: { id: playerID },
-    //         data: { contractStatus: contractStatus }
-    //     });
-    // };
+        const contractStatus = toggle === `SET` ? ContractStatus.INACTIVE_RESERVE : ContractStatus.SIGNED;
+        return await prisma.user.update({
+            where: { id: playerID },
+            data: {
+                Status: {
+                    update: {
+                        contractStatus: contractStatus
+                    }
+                }
+            },
+            include: { Status: true }
+        });
+    };
 
-    // static async retire(playerID) {
-    //     return await prisma.player.update({
-    //         where: { id: playerID },
-    //         data: {
-    //             team: null,
-    //             status: PlayerStatusCode.FORMER_PLAYER,
-    //             contractStatus: ContractStatus.RETIRED
-    //         }
-    //     });
-    // };
+    static async retire(playerID: string) {
+        return await prisma.account.update({
+            where: { providerAccountId: playerID },
+            data: {
+                User: {
+                    update: {
+                        data: {
+                            team: null,
+                            Status: {
+                                update: {
+                                    leagueStatus: LeagueStatus.RETIRED,
+                                    contractStatus: null,
+                                    contractRemaining: null,
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            include: { User: { include: { Status: true } } }
+        });
+    };
 };
