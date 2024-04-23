@@ -191,7 +191,7 @@ export class Player {
             riotPUUID?: string;
         },
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
-        flags: [Flags]
+        flags: [Flags] | []
     ) {
 
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
@@ -201,12 +201,16 @@ export class Player {
         if (!player) throw new Error(`Did not get a valid player`);
 
         let playerFlags = Number(player.flags);
-        flags.forEach(flag => {
-            if (method === `ADD`) playerFlags |= flag;
-            if (method === `SET`) playerFlags = sum(flags.map(f => Number(f)));
-            if (method === `REMOVE`) playerFlags &= flag;
-            if (method === `TOGGLE`) playerFlags ^= flag;
-        });
+        if (flags.length == 0) {
+            playerFlags = 0;
+        } else {
+            flags.forEach(flag => {
+                if (method === `ADD`) playerFlags |= flag;
+                if (method === `SET`) playerFlags = sum(flags.map(f => Number(f)));
+                if (method === `REMOVE`) playerFlags &= flag;
+                if (method === `TOGGLE`) playerFlags ^= flag;
+            });
+        }
 
         if (!player) return undefined;
         else return await prisma.user.update({
@@ -238,7 +242,7 @@ export class Player {
             riotPUUID?: string;
         },
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
-        roles: [Roles]
+        roles: [Roles] | []
     ) {
 
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
@@ -248,12 +252,16 @@ export class Player {
         if (!player) throw new Error(`Did not get a valid player`);
 
         let playerRoles = Number(player.roles);
-        roles.forEach(role => {
-            if (method === `ADD`) playerRoles |= role;
-            if (method === `SET`) playerRoles = sum(roles.map(r => Number(r)));
-            if (method === `REMOVE`) playerRoles &= role;
-            if (method === `TOGGLE`) playerRoles ^= role;
-        });
+        if (roles.length == 0) {
+            playerRoles = 0;
+        } else {
+            roles.forEach(role => {
+                if (method === `ADD`) playerRoles |= role;
+                if (method === `SET`) playerRoles = sum(roles.map(r => Number(r)));
+                if (method === `REMOVE`) playerRoles &= role;
+                if (method === `TOGGLE`) playerRoles ^= role;
+            });
+        }
 
         if (!player) return undefined;
         else return await prisma.user.update({
