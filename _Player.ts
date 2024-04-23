@@ -2,6 +2,8 @@ import { prisma } from "./prismadb";
 import { GameType, LeagueStatus } from "@prisma/client";
 import { Flags, Roles } from "./index"
 
+const sum = (array) => array.reduce((s, v) => s += v == null ? 0 : v, 0);
+
 export class Player {
 
     static async filterAllByStatus(statusFilter: [LeagueStatus]) {
@@ -112,7 +114,7 @@ export class Player {
      */
     static async getBy(option: {
         ign?: string;
-        userID? : string;
+        userID?: string;
         discordID?: string;
         riotPUUID?: string;
     } | undefined) {
@@ -167,7 +169,7 @@ export class Player {
 
     public static async getFlags(playerIdentifier: {
         ign?: string;
-        userID? : string;
+        userID?: string;
         discordID?: string;
         riotPUUID?: string;
     }) {
@@ -184,11 +186,11 @@ export class Player {
     public static async modifyFlags(
         playerIdentifier: {
             ign?: string;
-            userID? : string;
+            userID?: string;
             discordID?: string;
             riotPUUID?: string;
         },
-        method: `ADD` | `REMOVE` | `TOGGLE`,
+        method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
         flags: [Flags]
     ) {
 
@@ -201,6 +203,7 @@ export class Player {
         let playerFlags = Number(player.flags);
         flags.forEach(flag => {
             if (method === `ADD`) playerFlags |= flag;
+            if (method === `SET`) playerFlags = sum(flags.map(f => Number(f)));
             if (method === `REMOVE`) playerFlags &= flag;
             if (method === `TOGGLE`) playerFlags ^= flag;
         });
@@ -214,7 +217,7 @@ export class Player {
 
     public static async getRoles(playerIdentifier: {
         ign?: string;
-        userID? : string;
+        userID?: string;
         discordID?: string;
         riotPUUID?: string;
     }) {
@@ -230,11 +233,11 @@ export class Player {
     public static async modifyRoles(
         playerIdentifier: {
             ign?: string;
-            userID? : string;
+            userID?: string;
             discordID?: string;
             riotPUUID?: string;
         },
-        method: `ADD` | `REMOVE` | `TOGGLE`,
+        method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
         roles: [Roles]
     ) {
 
@@ -247,6 +250,7 @@ export class Player {
         let playerRoles = Number(player.roles);
         roles.forEach(role => {
             if (method === `ADD`) playerRoles |= role;
+            if (method === `SET`) playerRoles = sum(roles.map(r => Number(r)));
             if (method === `REMOVE`) playerRoles &= role;
             if (method === `TOGGLE`) playerRoles ^= role;
         });
