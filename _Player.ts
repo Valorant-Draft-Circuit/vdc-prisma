@@ -112,6 +112,7 @@ export class Player {
      */
     static async getBy(option: {
         ign?: string;
+        userID? : string;
         discordID?: string;
         riotPUUID?: string;
     } | undefined) {
@@ -128,10 +129,15 @@ export class Player {
             Records: true
         }
 
-        const { ign, discordID, riotPUUID } = option;
+        const { ign, userID, discordID, riotPUUID } = option;
 
         if (ign) return await prisma.user.findFirst({
             where: { Accounts: { some: { riotIGN: ign } } },
+            include: includeParams
+        });
+
+        if (userID) return await prisma.user.findFirst({
+            where: { id: userID },
             include: includeParams
         });
 
@@ -161,6 +167,7 @@ export class Player {
 
     public static async getFlags(playerIdentifier: {
         ign?: string;
+        userID? : string;
         discordID?: string;
         riotPUUID?: string;
     }) {
@@ -177,6 +184,7 @@ export class Player {
     public static async modifyFlags(
         playerIdentifier: {
             ign?: string;
+            userID? : string;
             discordID?: string;
             riotPUUID?: string;
         },
@@ -206,6 +214,7 @@ export class Player {
 
     public static async getRoles(playerIdentifier: {
         ign?: string;
+        userID? : string;
         discordID?: string;
         riotPUUID?: string;
     }) {
@@ -221,6 +230,7 @@ export class Player {
     public static async modifyRoles(
         playerIdentifier: {
             ign?: string;
+            userID? : string;
             discordID?: string;
             riotPUUID?: string;
         },
