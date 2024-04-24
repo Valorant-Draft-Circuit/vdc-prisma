@@ -65,7 +65,7 @@ export class Team {
                         { team: id },
                     ]
                 },
-                include: { Status: true, PrimaryRiotAccount: { include: { MMR: true } } }
+                include: { Status: true, PrimaryRiotAccount: { include: { MMR: true } }, Captain: true }
             })
         }
     };
