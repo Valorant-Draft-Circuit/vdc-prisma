@@ -118,6 +118,21 @@ export class Transaction {
         });
     };
 
+    static async toggleCaptain(
+        options: { teamID: number, playerID: string, toggle: `SET` | `REMOVE` }
+    ) {
+        const { teamID, playerID, toggle } = options;
+
+        const captainStatus = toggle === `SET` ? playerID : null;
+        return await prisma.teams.update({
+            where: { id: teamID },
+            data: {
+                captain: captainStatus
+            },
+            include: { Captain: true }
+        });
+    };
+
     static async retire(playerID: string) {
         return await prisma.account.update({
             where: { providerAccountId: playerID },

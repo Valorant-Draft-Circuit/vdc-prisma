@@ -128,7 +128,8 @@ export class Player {
             Status: true,
             Team: { include: { Franchise: true } },
             Accolades: true,
-            Records: true
+            Records: true,
+            Captain: true,
         }
 
         const { ign, userID, discordID, riotPUUID } = option;
