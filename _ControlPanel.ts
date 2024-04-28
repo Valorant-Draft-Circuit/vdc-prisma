@@ -1,21 +1,5 @@
 import { prisma } from "./prismadb";
-
-enum ControlPanelID {
-    SIGNUP_STATE                = 1,
-    ACTIVITY_CHECK_STATE        = 2,
-    SEASON                      = 3,
-
-    PROSPECT_MMR_CAP_PLAYER     = 4,
-    APPRENTICE_MMR_CAP_PLAYER   = 5,
-    EXPERT_MMR_CAP_PLAYER       = 6,
-
-    PROSPECT_MMR_CAP_TEAM       = 7,
-    APPRENTICE_MMR_CAP_TEAM     = 8,
-    EXPERT_MMR_CAP_TEAM         = 9,
-    MYTHIC_MMR_CAP_TEAM         = 10,
-
-    DRAFT_TRADES_OPEN           = 11,
-}
+import { ControlPanelID } from "./enums/_controlpanel"
 
 export class ControlPanel {
 
@@ -80,10 +64,41 @@ export class ControlPanel {
         }
     }
 
+    /** Get draft trades state */
+    static async getDraftTradeState() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.DRAFT_TRADES_OPEN }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return Boolean(response.value);
+    }
+
     /** Set draft trades state */
     static async setDraftTradeState(state: boolean) {
         const response = await prisma.controlPanel.update({
             where: { id: ControlPanelID.DRAFT_TRADES_OPEN },
+            data: { value: String(state) }
+        });
+
+        if (!response) throw new Error(`Failed to update the database`);
+        return Boolean(response.value);
+    }
+
+    /** Get offline draft state */
+    static async getOfflineDraftState() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.OFFLINE_DRAFT_OPEN }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return response.value == `true` ? true : false;
+    }
+
+    /** Set offline draft state */
+    static async setOfflineDraftState(state: boolean) {
+        const response = await prisma.controlPanel.update({
+            where: { id: ControlPanelID.OFFLINE_DRAFT_OPEN },
             data: { value: String(state) }
         });
 
