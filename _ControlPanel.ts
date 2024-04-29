@@ -40,9 +40,10 @@ export class ControlPanel {
             const expertMMRCap = response.find((r) => r.name === `expert_mmr_cap_player`)?.value;
 
             return {
-                PROSPECT: Number(prospectMMRCap),
-                APPRENTICE: Number(apprenticeMMRCap),
-                EXPERT: Number(expertMMRCap),
+                PROSPECT:   { min: 0,                               max: Number(prospectMMRCap)     },
+                APPRENTICE: { min: Number(prospectMMRCap) + 1,      max: Number(apprenticeMMRCap)   },
+                EXPERT:     { min: Number(apprenticeMMRCap) + 1,    max: Number(expertMMRCap)       },
+                MYTHIC:     { min: Number(expertMMRCap) + 1,        max: 999                        },
             }
         } else {
             // get MMR tier lines from the database
