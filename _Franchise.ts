@@ -59,35 +59,35 @@ export class Franchise {
         if (id) return await prisma.franchise.findFirst({
             where: { id: id },
             include: {
-                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+                GM: { include: { Accounts: true } }, AGM1: { include: { Accounts: true } }, AGM2: { include: { Accounts: true } }, Brand: true, Teams: true
             }
         });
 
         if (name) return await prisma.franchise.findFirst({
             where: { name: name },
             include: {
-                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+                GM: { include: { Accounts: true } }, AGM1: { include: { Accounts: true } }, AGM2: { include: { Accounts: true } }, Brand: true, Teams: true
             }
         });
 
         if (slug) return await prisma.franchise.findFirst({
             where: { slug: slug },
             include: {
-                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+                GM: { include: { Accounts: true } }, AGM1: { include: { Accounts: true } }, AGM2: { include: { Accounts: true } }, Brand: true, Teams: true
             }
         });
 
         if (teamID) return await prisma.franchise.findFirst({
             where: { Teams: { some: { id: teamID } } },
             include: {
-                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+                GM: { include: { Accounts: true } }, AGM1: { include: { Accounts: true } }, AGM2: { include: { Accounts: true } }, Brand: true, Teams: true
             }
         });
 
         if (teamName) return await prisma.franchise.findFirst({
             where: { Teams: { some: { name: teamName } } },
             include: {
-                GM: true, AGM1: true, AGM2: true, Brand: true, Teams: true
+                GM: { include: { Accounts: true } }, AGM1: { include: { Accounts: true } }, AGM2: { include: { Accounts: true } }, Brand: true, Teams: true
             }
         });
     };

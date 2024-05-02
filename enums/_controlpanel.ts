@@ -14,4 +14,5 @@ export enum ControlPanelID {
 
     DRAFT_TRADES_OPEN               = 11,
     OFFLINE_DRAFT_OPEN              = 12,
+    MMR_DISPLAY_STATE               = 13,
 }

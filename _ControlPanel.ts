@@ -27,7 +27,7 @@ export class ControlPanel {
     /** Get MMR caps */
     static async getMMRCaps(type: `PLAYER` | `TEAM`) {
 
-        if (type !== (`PLAYER` || `TEAM`)) throw new Error(`Invalid type of MMR cap requested. Please request either "PLAYER" or "TEAM"!`);
+        if (type !== `PLAYER` && type !== `TEAM`) throw new Error(`Invalid type of MMR cap requested. Please request either "PLAYER" or "TEAM"!`);
 
         if (type === `PLAYER`) {
             // get MMR tier lines from the database
@@ -40,10 +40,10 @@ export class ControlPanel {
             const expertMMRCap = response.find((r) => r.name === `expert_mmr_cap_player`)?.value;
 
             return {
-                PROSPECT:   { min: 0,                               max: Number(prospectMMRCap)     },
-                APPRENTICE: { min: Number(prospectMMRCap) + 1,      max: Number(apprenticeMMRCap)   },
-                EXPERT:     { min: Number(apprenticeMMRCap) + 1,    max: Number(expertMMRCap)       },
-                MYTHIC:     { min: Number(expertMMRCap) + 1,        max: 999                        },
+                PROSPECT: { min: 0, max: Number(prospectMMRCap) },
+                APPRENTICE: { min: Number(prospectMMRCap) + 1, max: Number(apprenticeMMRCap) },
+                EXPERT: { min: Number(apprenticeMMRCap) + 1, max: Number(expertMMRCap) },
+                MYTHIC: { min: Number(expertMMRCap) + 1, max: 999 },
             }
         } else {
             // get MMR tier lines from the database
@@ -100,6 +100,27 @@ export class ControlPanel {
     static async setOfflineDraftState(state: boolean) {
         const response = await prisma.controlPanel.update({
             where: { id: ControlPanelID.OFFLINE_DRAFT_OPEN },
+            data: { value: String(state) }
+        });
+
+        if (!response) throw new Error(`Failed to update the database`);
+        return Boolean(response.value);
+    }
+
+    /** Get MMR display state */
+    static async getMMRDisplayState() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.MMR_DISPLAY_STATE }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return response.value == `true` ? true : false;
+    }
+
+    /** Set MMR display state */
+    static async setMMRDisplayState(state: boolean) {
+        const response = await prisma.controlPanel.update({
+            where: { id: ControlPanelID.SEASON },
             data: { value: String(state) }
         });
 
