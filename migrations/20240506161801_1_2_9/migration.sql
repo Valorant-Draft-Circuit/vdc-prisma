@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Matches` MODIFY `matchType` ENUM('PRE_SEASON', 'BO2', 'MID_PLAYOFF', 'END_PLAYOFF') NOT NULL;

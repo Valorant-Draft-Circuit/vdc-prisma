@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `1.2.9` | Added `PRE_SEASON` enum to `MatchType` enum set |
 | `1.2.8` | Added optional `discordEmote` column to `FranchiseBrand` with type `String` |
 | `1.2.7` | Removed the `Agent` enum set and updated the `agent` column data type in `PlayerStats` from the `Agent` enum to `String` |
 | `1.2.6` | Changed lowercase enums in the `Tier` enumerations (`Prospect`, `Apprentice`, `Expert`, `Mythic`, `Mixed`) to `PROSPECT`, `APPRENTICE`, `EXPERT`, `MYTHIC` and `MIXED` respectively to follow enumeration convention |
