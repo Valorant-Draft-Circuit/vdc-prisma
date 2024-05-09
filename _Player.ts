@@ -45,7 +45,7 @@ export class Player {
                     ]
                 }
             },
-            include: { Accounts: { include: { MMR: true } }, Status: true }
+            include: { PrimaryRiotAccount: { include: { MMR: true } }, Status: true }
         })
     };
 
