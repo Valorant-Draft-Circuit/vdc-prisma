@@ -1,4 +1,4 @@
-import { ContractStatus, LeagueStatus, PrismaClient } from '@prisma/client';
+import { ContractStatus, LeagueStatus, PrismaClient, Tier } from '@prisma/client';
 import { Player } from './_Player';
 
 const prisma = new PrismaClient();
@@ -74,30 +74,46 @@ export class Transaction {
         });
     };
 
-    // static async sub(options: { playerID: string, teamID: number }) {
-    //     const { playerID, teamID } = options;
-    //     return await prisma.player.update({
-    //         where: { id: playerID },
-    //         data: {
-    //             team: teamID,
-    //             contractStatus: ContractStatus.ACTIVE_SUB,
-    //         }
-    //     })
-    // };
+    /** Substitute a player for a team */
+    static async sub(options: {
+        userID: string,
+        teamID: number,
+        tier: Tier
+    }) {
+        const { userID, teamID, tier } = options;
 
-    // static async unsub(options: { playerID: string }) {
-    //     const { playerID } = options;
-    //     const player = await Player.getBy({ discordID: playerID });
-    //     return await prisma.player.update({
-    //         where: { id: playerID },
-    //         data: {
-    //             team: null,
-    //             contractStatus: player?.status === PlayerStatusCode.FREE_AGENT ?
-    //                 ContractStatus.FREE_AGENT :
-    //                 ContractStatus.RESTRICTED_FREE_AGENT,
-    //         }
-    //     })
-    // };
+        await prisma.substitute.create({
+            data: {
+                userID: userID,
+                tier: tier
+            }
+        });
+
+        return await prisma.user.update({
+            where: { id: userID },
+            data: {
+                team: teamID,
+                Status: {
+                    update: {
+                        contractStatus: ContractStatus.ACTIVE_SUB
+                    }
+                }
+            }
+        });
+    };
+
+    /** Unsub a player for a team */
+    static async unsub(userID: string) {
+        return await prisma.user.update({
+            where: { id: userID },
+            data: {
+                team: null,
+                Status: {
+                    update: { contractStatus: null }
+                }
+            }
+        })
+    };
 
     static async toggleInactiveReserve(
         options: { playerID: string, toggle: `SET` | `REMOVE` }
