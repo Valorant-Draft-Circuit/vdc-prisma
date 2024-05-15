@@ -49,38 +49,24 @@ export class Player {
         })
     };
 
-    /** Get a player's stats by a specific option (Must include at least one)
-     * @param {Object} option
-     * @param {?Number} option.ign
-     * @param {?String} option.discordID
-     * @param {?String} option.riotPUUID
+    /** Get a player's stats by their user ID
+     * @param {String} userID
      */
-    static async getStatsBy(option: {
-        ign?: string;
-        discordID?: string;
-        riotPUUID?: string;
-    } | undefined) {
+    static async getStatsBy(userID) {
 
-        if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
-        if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+        if (userID == undefined) throw new Error(`Must provide a user ID`);
+        // if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        const { ign, discordID, riotPUUID } = option;
+        // const { ign, discordID, riotPUUID } = option;
 
         return await prisma.playerStats.findMany({
             where: {
                 AND: [
-                    {
-                        Player: {
-                            OR: [
-                                { PrimaryRiotAccount: { riotIGN: ign } },
-                                { Accounts: { some: { providerAccountId: discordID } } },
-                                { Accounts: { some: { providerAccountId: riotPUUID } } },
-                            ]
-                        }
-                    },
+                    { userID: userID },
                     { Game: { gameType: { equals: GameType.SEASON } } }
                 ]
-            }
+            },
+            include: { Game: { include: { Match: true } } }
         });
     };
 
@@ -126,7 +112,7 @@ export class Player {
             PrimaryRiotAccount: { include: { MMR: true } },
             Accounts: { include: { MMR: true } },
             Status: true,
-            Team: { include: { Franchise: true } },
+            Team: { include: { Franchise: { include: { Brand: true } } } },
             Accolades: true,
             Records: true,
             Captain: true,
