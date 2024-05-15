@@ -57,7 +57,8 @@ export class Games {
                     { Match: { away: { not: null } } },
                     { winner: { not: undefined } },
                 ]
-            }
+            },
+            include: { Match: true }
         });
 
         if (tier) return await prisma.games.findMany({
@@ -69,7 +70,8 @@ export class Games {
                     { Match: { away: { not: null } } },
                     { winner: { not: undefined } },
                 ]
-            }
+            },
+            include: { Match: true }
         });
 
         if (franchise) return await prisma.games.findMany({
@@ -86,7 +88,8 @@ export class Games {
                     { Match: { away: { not: null } } },
                     { winner: { not: undefined } },
                 ]
-            }
+            },
+            include: { Match: true }
         });
 
         if (team) return await prisma.games.findMany({
@@ -103,7 +106,8 @@ export class Games {
                     { Match: { away: { not: null } } },
                     { winner: { not: undefined } },
                 ]
-            }
+            },
+            include: { Match: true }
         });
     }
 }
