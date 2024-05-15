@@ -73,7 +73,7 @@ export class Team {
     static async getAllActiveByTier(tier: Tier) {
         return await prisma.teams.findMany({
             where: { AND: [{ tier: tier }, { active: true }] },
-            include: { Franchise: true }
+            include: { Franchise: { include: { Brand: true } } }
         })
     };
 
