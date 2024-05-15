@@ -33,7 +33,8 @@ export class Games {
         return await prisma.games.findFirst({
             where: { gameID: id },
             include: {
-                PlayerStats: { include: { Player: { include: { Team: true } } } }
+                PlayerStats: { include: { Player: { include: { Team: true, Accounts: true, PrimaryRiotAccount: true } } } },
+                Match: true
             }
         });
 
@@ -47,15 +48,52 @@ export class Games {
     }) {
         const { type, tier, franchise, team } = options;
 
-        return await prisma.games.findMany({
+        if (type) return await prisma.games.findMany({
+            where: {
+                AND: [
+                    { gameType: type },
+                    { datePlayed: { not: undefined } },
+                    { Match: { home: { not: null } } },
+                    { Match: { away: { not: null } } },
+                    { winner: { not: undefined } },
+                ]
+            }
+        });
+
+        if (tier) return await prisma.games.findMany({
+            where: {
+                AND: [
+                    { tier: tier },
+                    { datePlayed: { not: undefined } },
+                    { Match: { home: { not: null } } },
+                    { Match: { away: { not: null } } },
+                    { winner: { not: undefined } },
+                ]
+            }
+        });
+
+        if (franchise) return await prisma.games.findMany({
             where: {
                 AND: [
                     {
                         OR: [
-                            { gameType: type },
-                            { tier: tier },
                             { Match: { Home: { Franchise: { id: franchise } } } },
                             { Match: { Away: { Franchise: { id: franchise } } } },
+                        ]
+                    },
+                    { datePlayed: { not: undefined } },
+                    { Match: { home: { not: null } } },
+                    { Match: { away: { not: null } } },
+                    { winner: { not: undefined } },
+                ]
+            }
+        });
+
+        if (team) return await prisma.games.findMany({
+            where: {
+                AND: [
+                    {
+                        OR: [
                             { Match: { home: team } },
                             { Match: { away: team } },
                         ]
