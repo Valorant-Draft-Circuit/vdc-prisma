@@ -129,7 +129,7 @@ model FranchiseBrand {
   discordEmote     String?
   colorPrimary     String?
   colorSecondary   String?
-  description      String?
+  description      String?   @db.VarChar(999)
   urlDiscord       String?
   urlTwitter       String?
   urlMiscellaneous String?
