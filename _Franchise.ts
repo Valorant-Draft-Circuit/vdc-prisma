@@ -6,7 +6,7 @@ export class Franchise {
     static async getAllActive() {
         return await prisma.franchise.findMany({
             where: { active: true, },
-            include: { Teams: true }
+            include: { Teams: true, Brand: true }
         });
     };
 
