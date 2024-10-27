@@ -57,6 +57,7 @@ model User {
   GM                   Franchise?    @relation("GM")
   AGM1                 Franchise?    @relation("AGM1")
   AGM2                 Franchise?    @relation("AGM2")
+  AGM3                 Franchise?    @relation("AGM3")
   PrimaryRiotAccount   Account?      @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
   Accounts             Account[]     @relation("Accounts")
   sessions             Session[]
@@ -69,12 +70,13 @@ model VerificationToken {
 }
 
 model Accolades {
-  id       Int     @id @unique @default(autoincrement())
-  userID   String?
-  season   Int
-  tier     Tier
-  accolade String
-  Player   User?   @relation(fields: [userID], references: [id])
+  id        Int     @id @unique @default(autoincrement())
+  userID    String?
+  season    Int
+  tier      Tier
+  shorthand String
+  accolade  String
+  Player    User?   @relation(fields: [userID], references: [id])
 }
 
 model Records {
@@ -114,9 +116,11 @@ model Franchise {
   gmID       String?         @unique
   agm1ID     String?         @unique
   agm2ID     String?         @unique
+  agm3ID     String?         @unique
   GM         User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   AGM1       User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
   AGM2       User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
+  AGM3       User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
   Teams      Teams[]
   Brand      FranchiseBrand?
   DraftPicks Draft[]
@@ -129,7 +133,7 @@ model FranchiseBrand {
   discordEmote     String?
   colorPrimary     String?
   colorSecondary   String?
-  description      String?   @db.Text
+  description      String?    @db.Text
   urlDiscord       String?
   urlTwitter       String?
   urlMiscellaneous String?
@@ -137,7 +141,7 @@ model FranchiseBrand {
 }
 
 model MMR {
-  id            Int      @id @unique @default(autoincrement())
+  id            Int       @id @unique @default(autoincrement())
   numRanked     Int?
   numCombines   Int?
   numLastSeason Int?
@@ -147,7 +151,7 @@ model MMR {
   mmrEffective  Float?
   mmrSeason     Float?
   lastPulled    DateTime?
-  Account       Account? @relation("MMR")
+  Account       Account?  @relation("MMR")
 }
 
 model Substitute {
@@ -166,6 +170,7 @@ model Matches {
   matchID       Int       @id @unique @default(autoincrement())
   tier          Tier
   matchType     MatchType
+  matchDay      Int?
   dateScheduled DateTime
   home          Int?
   away          Int?
@@ -188,7 +193,7 @@ model Games {
   roundsWonHome Int
   roundsWonAway Int
   Match         Matches?      @relation(fields: [matchID], references: [matchID])
-  WinningTeam   Teams?         @relation("GamesWon", fields: [winner], references: [id])
+  WinningTeam   Teams?        @relation("GamesWon", fields: [winner], references: [id])
   PlayerStats   PlayerStats[] @relation("GamePlayerStats")
   TeamStats     TeamStats[]   @relation("GameTeamStats")
   Substitutes   Substitute[]
@@ -228,7 +233,7 @@ model PlayerStats {
   substituteID  Int?        @unique
   Player        User        @relation("UserPlayerStats", fields: [userID], references: [id])
   Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
-  Team          Teams?       @relation(fields: [team], references: [id])
+  Team          Teams?      @relation(fields: [team], references: [id])
   Substitute    Substitute? @relation(fields: [substituteID], references: [id])
 }
 
@@ -330,6 +335,7 @@ enum LeagueStatus {
 
 enum ContractStatus {
   SIGNED
+  SUBBED_OUT
   INACTIVE_RESERVE
   ACTIVE_SUB
 }
