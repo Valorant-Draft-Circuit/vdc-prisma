@@ -180,7 +180,7 @@ export class Player {
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
         flags: [Flags] | []
     ) {
-        const newflags = flags.map(f => BigInt(f));
+        const bigintFlags = flags.map(f => BigInt(f));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
         if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
 
@@ -191,9 +191,9 @@ export class Player {
         if (flags.length == 0) {
             playerFlags = BigInt(0);
         } else {
-            newflags.forEach(flag => {
+            bigintFlags.forEach(flag => {
                 if (method === `ADD`) playerFlags |= flag;
-                if (method === `SET`) playerFlags = newflags.reduce((i , f) => i + BigInt(f));
+                if (method === `SET`) playerFlags = bigintFlags.reduce((i , f) => i + BigInt(f));
                 if (method === `REMOVE`) playerFlags &= flag;
                 if (method === `TOGGLE`) playerFlags ^= flag;
             });
@@ -232,7 +232,7 @@ export class Player {
         roles: [Roles] | []
     ) {
         console.log(roles)
-        const newroles = roles.map(r => BigInt(r));
+        const bigintRoles = roles.map(r => BigInt(r));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
         if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
 
@@ -243,9 +243,9 @@ export class Player {
         if (roles.length == 0) {
             playerRoles = BigInt(0);
         } else {
-            newroles.forEach(role => {
+            bigintRoles.forEach(role => {
                 if (method === `ADD`) playerRoles |= role;
-                if (method === `SET`) playerRoles = BigInt((newroles.reduce((i, r) => i + BigInt(r))));
+                if (method === `SET`) playerRoles = BigInt((bigintRoles.reduce((i, r) => i + BigInt(r))));
                 if (method === `REMOVE`) playerRoles &= role;
                 if (method === `TOGGLE`) playerRoles ^= role;
             });
