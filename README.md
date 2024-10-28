@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `2.0.0` | Added `ApiAccess` table with columns `id` (`Int`, unique),  `key` (`String`, uuid, unique),  `owner` (`String`),  `active` (`Boolean`), `rateLimit` (`Int`, default of `30`), `allowedEndpoints` (`Json`) |
 | `1.4.0` | Added `season` column with type `Int` to `Matches` with a default value of `7` and updated the default value of `season` in the `Games` table to `7`  |
 | `1.3.0` | Added `matchDay` column to `Match` <br> Added `shorthand` column to `Accolades` <br> Added `SUBBED_OUT` enum to `ContractStatus` <br> Added optional `agm3ID` in the `Franchise` table and it's respective `AGM3` relation in the `User` table |
 | `1.2.11` | Updated `description` type in `FranchiseBrand` to type [`Text`](https://www.prisma.io/docs/orm/overview/databases/mysql) |

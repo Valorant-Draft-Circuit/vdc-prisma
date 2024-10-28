@@ -296,6 +296,15 @@ model ControlPanel {
   notes String
 }
 
+model ApiAccess {
+  id               Int     @id @unique @default(autoincrement())
+  key              String  @unique @default(uuid())
+  owner            String? // Human readable key owner
+  active           Boolean @default(true)
+  rateLimit        Int     @default(30) // Default to 30 requests/min
+  allowedEndpoints Json // List of allowed endpoints
+}
+
 enum Tier {
   PROSPECT
   APPRENTICE
