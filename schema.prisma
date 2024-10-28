@@ -169,6 +169,7 @@ model Substitute {
 model Matches {
   matchID       Int       @id @unique @default(autoincrement())
   tier          Tier
+  season        Int       @default(7)
   matchType     MatchType
   matchDay      Int?
   dateScheduled DateTime
@@ -184,7 +185,7 @@ model Games {
   // Forfeits will submit a datetime as the unique ID, and fill in the gameType as FORFEIT
   // Invalid matches include matches that do NOT have ONLY VDC players in the database or out of tier matches
   matchID       Int?
-  season        Int           @default(6)
+  season        Int           @default(7)
   tier          Tier
   gameType      GameType
   datePlayed    DateTime      @updatedAt

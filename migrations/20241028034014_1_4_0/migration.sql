@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `Games` MODIFY `season` INTEGER NOT NULL DEFAULT 7;
+
+-- AlterTable
+ALTER TABLE `Matches` ADD COLUMN `season` INTEGER NOT NULL DEFAULT 7;
