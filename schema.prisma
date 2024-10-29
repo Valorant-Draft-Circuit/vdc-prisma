@@ -108,22 +108,23 @@ model Teams {
 }
 
 model Franchise {
-  id         Int             @id @unique @default(autoincrement())
-  name       String
-  slug       String
-  active     Boolean         @default(true)
-  roleID     String?
-  gmID       String?         @unique
-  agm1ID     String?         @unique
-  agm2ID     String?         @unique
-  agm3ID     String?         @unique
-  GM         User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
-  AGM1       User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
-  AGM2       User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
-  AGM3       User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
-  Teams      Teams[]
-  Brand      FranchiseBrand?
-  DraftPicks Draft[]
+  id                    Int             @id @unique @default(autoincrement())
+  name                  String
+  slug                  String
+  active                Boolean         @default(true)
+  roleID                String?
+  transactionsChannelID String?
+  gmID                  String?         @unique
+  agm1ID                String?         @unique
+  agm2ID                String?         @unique
+  agm3ID                String?         @unique
+  GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
+  AGM1                  User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
+  AGM2                  User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
+  AGM3                  User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
+  Teams                 Teams[]
+  Brand                 FranchiseBrand?
+  DraftPicks            Draft[]
 }
 
 model FranchiseBrand {
