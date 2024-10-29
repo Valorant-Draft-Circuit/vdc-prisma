@@ -167,7 +167,7 @@ export class Player {
         const player = await Player.getBy(playerIdentifier);
 
         if (!player) return undefined;
-        else return Number(player.flags)
+        else return BigInt(player.flags)
     }
 
     public static async modifyFlags(
@@ -180,20 +180,20 @@ export class Player {
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
         flags: [Flags] | []
     ) {
-
+        const bigintFlags = flags.map(f => BigInt(f));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
         if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
 
         const player = await Player.getBy(playerIdentifier);
         if (!player) throw new Error(`Did not get a valid player`);
 
-        let playerFlags = Number(player.flags);
+        let playerFlags = BigInt(player.flags);
         if (flags.length == 0) {
-            playerFlags = 0;
+            playerFlags = BigInt(0);
         } else {
-            flags.forEach(flag => {
+            bigintFlags.forEach(flag => {
                 if (method === `ADD`) playerFlags |= flag;
-                if (method === `SET`) playerFlags = sum(flags.map(f => Number(f)));
+                if (method === `SET`) playerFlags = bigintFlags.reduce((i , f) => i + BigInt(f));
                 if (method === `REMOVE`) playerFlags &= flag;
                 if (method === `TOGGLE`) playerFlags ^= flag;
             });
@@ -218,7 +218,7 @@ export class Player {
 
         const player = await Player.getBy(playerIdentifier);
         if (!player) return undefined;
-        else return Number(player.roles)
+        else return BigInt(player.roles)
     }
 
     public static async modifyRoles(
@@ -231,20 +231,21 @@ export class Player {
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
         roles: [Roles] | []
     ) {
-
+        console.log(roles)
+        const bigintRoles = roles.map(r => BigInt(r));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
         if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
 
         const player = await Player.getBy(playerIdentifier);
         if (!player) throw new Error(`Did not get a valid player`);
 
-        let playerRoles = Number(player.roles);
+        let playerRoles = BigInt(player.roles); 
         if (roles.length == 0) {
-            playerRoles = 0;
+            playerRoles = BigInt(0);
         } else {
-            roles.forEach(role => {
+            bigintRoles.forEach(role => {
                 if (method === `ADD`) playerRoles |= role;
-                if (method === `SET`) playerRoles = sum(roles.map(r => Number(r)));
+                if (method === `SET`) playerRoles = BigInt((bigintRoles.reduce((i, r) => i + BigInt(r))));
                 if (method === `REMOVE`) playerRoles &= role;
                 if (method === `TOGGLE`) playerRoles ^= role;
             });
