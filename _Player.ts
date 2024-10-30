@@ -231,7 +231,6 @@ export class Player {
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
         roles: [Roles] | []
     ) {
-        console.log(roles)
         const bigintRoles = roles.map(r => BigInt(r));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
         if (Object.keys(playerIdentifier).length > 1) throw new Error(`Must specify exactly 1 way to identify a user!`);
