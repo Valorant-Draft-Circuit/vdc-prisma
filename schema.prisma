@@ -52,7 +52,7 @@ model User {
   Records              Records[]
   PlayerStats          PlayerStats[] @relation("UserPlayerStats")
   Substitutes          Substitute[]
-  Draft                Draft?
+  Draft                Draft[]
   Captain              Teams?        @relation("Captain")
   GM                   Franchise?    @relation("GM")
   AGM1                 Franchise?    @relation("AGM1")
@@ -229,9 +229,6 @@ model PlayerStats {
   antiEcoDeaths Int?
   exitKills     Int?
   clutches      Int?
-  flex1         String?     @db.VarChar(255)
-  flex2         String?     @db.VarChar(255)
-  flex3         String?     @db.VarChar(255)
   substituteID  Int?        @unique
   Player        User        @relation("UserPlayerStats", fields: [userID], references: [id])
   Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
@@ -277,7 +274,7 @@ model Draft {
   round     Int
   pick      Int
   keeper    Boolean    @default(false)
-  userID    String?    @unique
+  userID    String?
   franchise Int?
   Franchise Franchise? @relation(fields: [franchise], references: [id])
   Player    User?      @relation(fields: [userID], references: [id])
