@@ -58,6 +58,24 @@ export class Transaction {
         })
     };
 
+    static async draftSign(options: { userID: string, teamID: number, isGM: boolean, isNewContract: Boolean }) {
+        const { userID, teamID, isGM, isNewContract } = options;
+        return await prisma.user.update({
+            where: { id: userID },
+            data: {
+                team: teamID,
+                Status: {
+                    update: {
+                        leagueStatus: isGM ? LeagueStatus.GENERAL_MANAGER : LeagueStatus.SIGNED,
+                        contractStatus: ContractStatus.SIGNED,
+                        contractRemaining: isNewContract ? 2 : 1,
+                    }
+                }
+            },
+            include: { Status: true }
+        })
+    };
+
     static async renew(userID: string) {
         return await prisma.status.update({
             where: { userID: userID },
