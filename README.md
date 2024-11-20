@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `2.2.1` | Fixed one-to-many relation for `userID` on the `Draft` table, added unique constraint to `id` on `User` table & dropped `Draft_userID_key` index/constraint on the `Draft` table |
 | `2.2.0` | Changed `userID` in `Draft` to no longer be unique & removed `flex1`, `flex2` & `flex3` from `PlayerStats` |
 | `2.1.0` | Added `transactionsChannelID` with type `String` to `Franchise` |
 | `2.0.0` | Added `ApiAccess` table with columns `id` (`Int`, unique),  `key` (`String`, uuid, unique),  `owner` (`String`),  `active` (`Boolean`), `rateLimit` (`Int`, default of `30`), `allowedEndpoints` (`Json`) |

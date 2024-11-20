@@ -36,7 +36,7 @@ model Session {
 }
 
 model User {
-  id                   String        @id @default(cuid())
+  id                   String        @id @unique @default(cuid())
   name                 String?
   // discord name
   team                 Int?
@@ -52,7 +52,7 @@ model User {
   Records              Records[]
   PlayerStats          PlayerStats[] @relation("UserPlayerStats")
   Substitutes          Substitute[]
-  Draft                Draft[]
+  Draft                Draft[]       @relation("PlayerDraftPick")
   Captain              Teams?        @relation("Captain")
   GM                   Franchise?    @relation("GM")
   AGM1                 Franchise?    @relation("AGM1")
@@ -277,7 +277,7 @@ model Draft {
   userID    String?
   franchise Int?
   Franchise Franchise? @relation(fields: [franchise], references: [id])
-  Player    User?      @relation(fields: [userID], references: [id])
+  Player    User?      @relation("PlayerDraftPick", fields: [userID], references: [id])
 }
 
 model FAQ {
