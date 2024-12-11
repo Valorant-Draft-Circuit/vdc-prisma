@@ -128,4 +128,13 @@ export class ControlPanel {
         return Boolean(response.value);
     }
 
+    /** Set MMR display state */
+    static async getLeagueState() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.LEAGUE_STATE }
+        });
+
+        if (!response) throw new Error(`Failed to update the database`);
+        return response.value;
+    }
 }

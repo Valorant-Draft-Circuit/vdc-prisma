@@ -112,7 +112,19 @@ export class Player {
             PrimaryRiotAccount: { include: { MMR: true } },
             Accounts: { include: { MMR: true } },
             Status: true,
-            Team: { include: { Franchise: { include: { Brand: true } } } },
+            Team: {
+                include: {
+                    Franchise: {
+                        include: {
+                            Brand: true,
+                            GM: { include: { Accounts: true } },
+                            AGM1: { include: { Accounts: true } },
+                            AGM2: { include: { Accounts: true } },
+                            AGM3: { include: { Accounts: true } },
+                        }
+                    }
+                }
+            },
             Accolades: true,
             Records: true,
             Captain: true,
@@ -193,7 +205,7 @@ export class Player {
         } else {
             bigintFlags.forEach(flag => {
                 if (method === `ADD`) playerFlags |= flag;
-                if (method === `SET`) playerFlags = bigintFlags.reduce((i , f) => i + BigInt(f));
+                if (method === `SET`) playerFlags = bigintFlags.reduce((i, f) => i + BigInt(f));
                 if (method === `REMOVE`) playerFlags &= flag;
                 if (method === `TOGGLE`) playerFlags ^= flag;
             });
@@ -238,7 +250,7 @@ export class Player {
         const player = await Player.getBy(playerIdentifier);
         if (!player) throw new Error(`Did not get a valid player`);
 
-        let playerRoles = BigInt(player.roles); 
+        let playerRoles = BigInt(player.roles);
         if (roles.length == 0) {
             playerRoles = BigInt(0);
         } else {
