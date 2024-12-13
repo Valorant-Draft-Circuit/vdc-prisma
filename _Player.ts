@@ -52,7 +52,7 @@ export class Player {
     /** Get a player's stats by their user ID
      * @param {String} userID
      */
-    static async getStatsBy(userID) {
+    static async getStatsBy(userID, season) {
 
         if (userID == undefined) throw new Error(`Must provide a user ID`);
         // if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
@@ -63,7 +63,8 @@ export class Player {
             where: {
                 AND: [
                     { userID: userID },
-                    { Game: { gameType: { equals: GameType.SEASON } } }
+                    { Game: { gameType: { equals: GameType.SEASON } } },
+                    { Game: { season: season } }
                 ]
             },
             include: { Game: { include: { Match: true } } }
