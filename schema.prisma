@@ -46,6 +46,7 @@ model User {
   image                String?
   roles                String        @default("0x0")
   flags                String        @default("0x0")
+  createdAt            DateTime      @default(now())
   Status               Status?       @relation("PlayerStatus")
   Team                 Teams?        @relation(fields: [team], references: [id])
   Accolades            Accolades[]
