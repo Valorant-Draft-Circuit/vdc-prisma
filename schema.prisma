@@ -104,8 +104,8 @@ model Teams {
   AwayMatches        Matches[]     @relation("AwayMatches")
   GamesWon           Games[]       @relation("GamesWon")
   PlayerStats        PlayerStats[]
-  TeamStats          TeamStats[]
   Substitutes        Substitute[]
+  MapBans            MapBans[]
 }
 
 model Franchise {
@@ -132,10 +132,12 @@ model FranchiseBrand {
   id               Int        @id @unique @default(autoincrement())
   franchise        Int?       @unique
   logo             String?
+  banner           String?
   discordEmote     String?
   colorPrimary     String?
   colorSecondary   String?
   description      String?    @db.Text
+  draftMessage     String?    @db.Text
   urlDiscord       String?
   urlTwitter       String?
   urlMiscellaneous String?
@@ -157,29 +159,44 @@ model MMR {
 }
 
 model Substitute {
-  id     Int          @id @unique @default(autoincrement())
-  userID String
-  gameID String?
-  team   Int?
-  tier   Tier
-  User   User         @relation(fields: [userID], references: [id])
-  Stats  PlayerStats?
-  Game   Games?       @relation(fields: [gameID], references: [gameID])
-  Team   Teams?       @relation(fields: [team], references: [id])
+  id      Int          @id @unique @default(autoincrement())
+  userID  String
+  matchID Int?
+  team    Int?
+  tier    Tier
+  User    User         @relation(fields: [userID], references: [id])
+  Stats   PlayerStats?
+  Match   Matches?     @relation(fields: [matchID], references: [matchID])
+  Team    Teams?       @relation(fields: [team], references: [id])
 }
 
 model Matches {
-  matchID       Int       @id @unique @default(autoincrement())
+  matchID       Int          @id @unique @default(autoincrement())
   tier          Tier
-  season        Int       @default(7)
+  season        Int          @default(7)
   matchType     MatchType
   matchDay      Int?
   dateScheduled DateTime
   home          Int?
   away          Int?
-  Home          Teams?    @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
-  Away          Teams?    @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
+  Home          Teams?       @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
+  Away          Teams?       @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
   Games         Games[]
+  Substitutes   Substitute[]
+  MapBans       MapBans[]
+}
+
+model MapBans {
+  id      Int @id @unique @default(autoincrement())
+  matchID Int
+
+  order Int // order denotes the selection. Index at 0
+  type  MapBanType
+  team  Int
+  map   String
+
+  Team  Teams   @relation(fields: [team], references: [id])
+  Match Matches @relation(fields: [matchID], references: [matchID])
 }
 
 model Games {
@@ -190,16 +207,15 @@ model Games {
   season        Int           @default(7)
   tier          Tier
   gameType      GameType
-  datePlayed    DateTime      @updatedAt
+  datePlayed    DateTime
   winner        Int?
   rounds        Int
   roundsWonHome Int
   roundsWonAway Int
+  map           String?
   Match         Matches?      @relation(fields: [matchID], references: [matchID])
   WinningTeam   Teams?        @relation("GamesWon", fields: [winner], references: [id])
   PlayerStats   PlayerStats[] @relation("GamePlayerStats")
-  TeamStats     TeamStats[]   @relation("GameTeamStats")
-  Substitutes   Substitute[]
 }
 
 model PlayerStats {
@@ -235,29 +251,6 @@ model PlayerStats {
   Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
   Team          Teams?      @relation(fields: [team], references: [id])
   Substitute    Substitute? @relation(fields: [substituteID], references: [id])
-}
-
-model TeamStats {
-  id     Int     @id @unique @default(autoincrement())
-  gameID String?
-  team   Int?
-  flex1  Float?
-  flex2  Float?
-  flex3  Float?
-  flex4  Float?
-  flex5  Float?
-  flex6  Float?
-  flex7  Float?
-  flex8  Float?
-  flex10 Float?
-  flex11 Float?
-  flex12 Float?
-  flex13 Float?
-  flex14 Float?
-  flex15 String? @db.VarChar(255)
-  flex16 String? @db.VarChar(255)
-  Game   Games?  @relation("GameTeamStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GameTeamStats")
-  Team   Teams?  @relation(fields: [team], references: [id])
 }
 
 model Status {
@@ -347,4 +340,11 @@ enum ContractStatus {
   SUBBED_OUT
   INACTIVE_RESERVE
   ACTIVE_SUB
+}
+
+enum MapBanType {
+  PICK
+  BAN
+  DISCARD
+  DECIDE
 }

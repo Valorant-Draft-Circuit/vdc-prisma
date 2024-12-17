@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `3.0.0` | Added `map` to the `Games` table <br> Removed `@updatedAt` from `datePlayed` <br> Changed `gameID` to `matchID` in `Substitute` table and updated type to `Int` <br> Updated relation in the `Substitute` table from `Games` table to `Matches` table <br> Added `banner` and `draftMessage` to the `FranchiseBrand` table <br> Dropped `TeamStats` table (*sorry Regi*) & their relevant relations in the `Games` and `Teams` tables <br> Created `MapBans` table with columns `id`, `matchID`, `order`, `type`, `team`, `map` with types `Int`, `Int`, `Int`, `MapBanType`, `Int`, `String` respectively and relevant relations for `Team` and `Match` |
 | `2.2.2` | Added `createdAt` to the `User` table, with default value `now()` |
 | `2.2.1` | Fixed one-to-many relation for `userID` on the `Draft` table, added unique constraint to `id` on `User` table & dropped `Draft_userID_key` index/constraint on the `Draft` table |
 | `2.2.0` | Changed `userID` in `Draft` to no longer be unique & removed `flex1`, `flex2` & `flex3` from `PlayerStats` |
