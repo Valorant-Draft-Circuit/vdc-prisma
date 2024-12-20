@@ -41,7 +41,7 @@ export class Games {
     };
 
     static async getAllBy(options: {
-        type?: GameType,
+        type?: GameType | [GameType],
         tier?: Tier,
         franchise?: number,
         team?: number,
@@ -49,8 +49,19 @@ export class Games {
     }) {
         let params: any = [];
 
+        console.log(typeof options.type)
+
         // generate filter paramaters
-        if (options.type) params.push({ gameType: options.type });
+        if (options.type && typeof options.type == `string`) {
+            params.push({ gameType: options.type });
+        } else if (options.type && typeof options.type == `object`) {
+            let orOpts: any = [];
+            for (let i = 0; i < options.type.length; i++) {
+                const typ = options.type[i];
+                orOpts.push({ gameType: GameType[typ] });
+            }
+            params.push({ OR: [...orOpts] });
+        }
         if (options.tier) params.push({ tier: options.tier });
         if (options.franchise) params.push({
             OR: [
@@ -65,6 +76,8 @@ export class Games {
             ]
         });
         if (options.season) params.push({ season: options.season });
+
+        console.log(params)
 
         // make & return request
         return await prisma.games.findMany({
