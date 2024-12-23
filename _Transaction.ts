@@ -189,4 +189,11 @@ export class Transaction {
             include: { User: { include: { Status: true } } }
         });
     };
+
+    static async reschedule(matchID: number, newDate: Date) {
+        return await prisma.matches.update({
+            where: { matchID: matchID },
+            data: { dateScheduled: newDate }
+        });
+    };
 };
