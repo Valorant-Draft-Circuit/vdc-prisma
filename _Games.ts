@@ -49,8 +49,6 @@ export class Games {
     }) {
         let params: any = [];
 
-        console.log(typeof options.type)
-
         // generate filter paramaters
         if (options.type && typeof options.type == `string`) {
             params.push({ gameType: options.type });
@@ -76,8 +74,6 @@ export class Games {
             ]
         });
         if (options.season) params.push({ season: options.season });
-
-        console.log(params)
 
         // make & return request
         return await prisma.games.findMany({
