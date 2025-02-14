@@ -309,8 +309,8 @@ enum Tier {
 enum MatchType {
   PRE_SEASON
   BO2
-  MID_PLAYOFF
-  END_PLAYOFF
+  BO3
+  BO5
 }
 
 enum GameType {
