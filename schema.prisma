@@ -8,23 +8,24 @@ datasource db {
 }
 
 model Account {
-  id                String  @id @unique @default(cuid())
+  id                String    @id @unique @default(cuid())
   userId            String
   type              String
   provider          String
-  providerAccountId String  @unique
+  providerAccountId String    @unique
   refresh_token     String?
-  access_token      String? @db.Text
+  access_token      String?   @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
   id_token          String?
   session_state     String?
   riotIGN           String?
-  mmr               Int?    @unique
-  User              User    @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
-  MMR               MMR?    @relation("MMR", fields: [mmr], references: [id], onDelete: Cascade)
-  UserAccount       User?   @relation("PrimaryRiotAccount")
+  mmr               Int?      @unique
+  User              User      @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
+  MMR               MMR?      @relation("MMR", fields: [mmr], references: [id], onDelete: Cascade)
+  UserAccount       User?     @relation("PrimaryRiotAccount")
+  ModLogs           ModLogs[] @relation("ModLogs")
 }
 
 model Session {
@@ -52,7 +53,6 @@ model User {
   Accolades            Accolades[]
   Records              Records[]
   PlayerStats          PlayerStats[] @relation("UserPlayerStats")
-  Substitutes          Substitute[]
   Draft                Draft[]       @relation("PlayerDraftPick")
   Captain              Teams?        @relation("Captain")
   GM                   Franchise?    @relation("GM")
@@ -62,6 +62,9 @@ model User {
   PrimaryRiotAccount   Account?      @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
   Accounts             Account[]     @relation("Accounts")
   sessions             Session[]
+  Substitute           Substitute[]  @relation("Sub")
+  SubbedOut            Substitute[]  @relation("Subbed")
+  ModLogs              ModLogs[]     @relation("ModHistory")
 }
 
 model VerificationToken {
@@ -159,21 +162,23 @@ model MMR {
 }
 
 model Substitute {
-  id      Int          @id @unique @default(autoincrement())
-  userID  String
-  matchID Int?
-  team    Int?
-  tier    Tier
-  User    User         @relation(fields: [userID], references: [id])
-  Stats   PlayerStats?
-  Match   Matches?     @relation(fields: [matchID], references: [matchID])
-  Team    Teams?       @relation(fields: [team], references: [id])
+  id       Int          @id @unique @default(autoincrement())
+  subID    String? // this is the userID of the player who is SUBBING FOR the team
+  matchID  Int?
+  team     Int?
+  subbedID String? // this is the userID of the player who is ON THE TEAM needing a sub
+  tier     Tier
+  Sub      User?        @relation("Sub", fields: [subID], references: [id])
+  Subbed   User?        @relation("Subbed", fields: [subbedID], references: [id])
+  Stats    PlayerStats?
+  Match    Matches?     @relation(fields: [matchID], references: [matchID])
+  Team     Teams?       @relation(fields: [team], references: [id])
 }
 
 model Matches {
   matchID       Int          @id @unique @default(autoincrement())
   tier          Tier
-  season        Int          @default(7)
+  season        Int          @default(8)
   matchType     MatchType
   matchDay      Int?
   dateScheduled DateTime
@@ -204,7 +209,7 @@ model Games {
   // Forfeits will submit a datetime as the unique ID, and fill in the gameType as FORFEIT
   // Invalid matches include matches that do NOT have ONLY VDC players in the database or out of tier matches
   matchID       Int?
-  season        Int           @default(7)
+  season        Int           @default(8)
   tier          Tier
   gameType      GameType
   datePlayed    DateTime
@@ -274,6 +279,20 @@ model Draft {
   Player    User?      @relation("PlayerDraftPick", fields: [userID], references: [id])
 }
 
+model ModLogs {
+  id        Int        @id @unique @default(autoincrement())
+  discordID String // this is the userID of the player who is being logged (Discord ID)
+  modID     String // this is the userID of the mod who is logging (VDC ID)
+  season    Int        @default(8)
+  date      DateTime   @default(now())
+  type      ModLogType
+  message   String     @db.Text
+  expires   DateTime?
+
+  Player    Account? @relation("ModLogs", fields: [discordID], references: [providerAccountId])
+  Moderator User     @relation("ModHistory", fields: [modID], references: [id])
+}
+
 model FAQ {
   id       Int     @id @unique @default(autoincrement())
   question String
@@ -309,8 +328,8 @@ enum Tier {
 enum MatchType {
   PRE_SEASON
   BO2
-  BO3
-  BO5
+  MID_PLAYOFF
+  END_PLAYOFF
 }
 
 enum GameType {
@@ -347,4 +366,12 @@ enum MapBanType {
   BAN
   DISCARD
   DECIDE
+}
+
+enum ModLogType {
+  NOTE
+  INFORMAL_WARNING
+  FORMAL_WARNING
+  MUTE
+  BAN
 }

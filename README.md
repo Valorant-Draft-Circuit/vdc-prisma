@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `4.0.0` | Created the `ModLogs` table with columns `id`, `discordID`, `modID`, `season`, `date`, `type`, `message`, `expires` with types `Int`, `String`, `String`, `Int`, `DateTime`, `ModLogType`, `String`, `DateTime` with relevant relations for `Player` & `Moderator` <br> Updated the `Substitute` table with the following: `userID` > `subID`, Added `subbedID`, Updated relations for `Sub` & `Subbed` player(s) <br> Updated default season values to `8` |
 | `3.0.1` | Removed `MID_PLAYOFF` & `END_PLAYOFF` and added `BO3` & `BO5` to `MatchType` enum |
 | `3.0.0` | Added `map` to the `Games` table <br> Removed `@updatedAt` from `datePlayed` <br> Changed `gameID` to `matchID` in `Substitute` table and updated type to `Int` <br> Updated relation in the `Substitute` table from `Games` table to `Matches` table <br> Added `banner` and `draftMessage` to the `FranchiseBrand` table <br> Dropped `TeamStats` table (*sorry Regi*) & their relevant relations in the `Games` and `Teams` tables <br> Created `MapBans` table with columns `id`, `matchID`, `order`, `type`, `team`, `map` with types `Int`, `Int`, `Int`, `MapBanType`, `Int`, `String` respectively and relevant relations for `Team` and `Match` |
 | `2.2.2` | Added `createdAt` to the `User` table, with default value `now()` |

@@ -7,5 +7,4 @@
 -- AlterTable
 ALTER TABLE `Matches` MODIFY `matchType` ENUM('PRE_SEASON', 'BO2', 'BO3', 'BO5') NOT NULL;
 
-DROP INDEX `Draft_userID_fkey` ON `Draft`;
 
