@@ -100,12 +100,12 @@ export class Transaction {
     }) {
         const { userID, teamID, tier } = options;
 
-        await prisma.substitute.create({
-            data: {
-                userID: userID,
-                tier: tier
-            }
-        });
+        // await prisma.substitute.create({
+        //     data: {
+        //         userID: userID,
+        //         tier: tier
+        //     }
+        // });
 
         return await prisma.user.update({
             where: { id: userID },
