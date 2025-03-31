@@ -40,8 +40,8 @@ export class Transaction {
         });
     };
 
-    static async sign(options: { userID: string, teamID: number, isGM: boolean }) {
-        const { userID, teamID, isGM } = options;
+    static async sign(options: { userID: string, teamID: number, isGM: boolean, contractLength: number }) {
+        const { userID, teamID, isGM, contractLength } = options;
         return await prisma.user.update({
             where: { id: userID },
             data: {
@@ -50,7 +50,7 @@ export class Transaction {
                     update: {
                         leagueStatus: isGM ? LeagueStatus.GENERAL_MANAGER : LeagueStatus.SIGNED,
                         contractStatus: ContractStatus.SIGNED,
-                        contractRemaining: 2,
+                        contractRemaining: contractLength,
                     }
                 }
             },
