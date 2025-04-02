@@ -137,4 +137,13 @@ export class ControlPanel {
         if (!response) throw new Error(`Failed to update the database`);
         return response.value;
     }
+
+    static async getWelcomeMessage() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.WELCOME_MESSAGE }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return response.value;
+    }
 }

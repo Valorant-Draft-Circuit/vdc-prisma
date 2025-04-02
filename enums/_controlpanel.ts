@@ -16,4 +16,6 @@ export enum ControlPanelID {
     OFFLINE_DRAFT_OPEN              = 12,
     MMR_DISPLAY_STATE               = 13,
     LEAGUE_STATE                    = 15,
+
+    WELCOME_MESSAGE                 = 20,
 }
