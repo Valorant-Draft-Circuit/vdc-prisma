@@ -258,7 +258,7 @@ export class Player {
             bigintRoles.forEach(role => {
                 if (method === `ADD`) playerRoles |= role;
                 if (method === `SET`) playerRoles = BigInt((bigintRoles.reduce((i, r) => i + BigInt(r))));
-                if (method === `REMOVE`) playerRoles &= role;
+                if (method === `REMOVE`) playerRoles -= role;
                 if (method === `TOGGLE`) playerRoles ^= role;
             });
         }
