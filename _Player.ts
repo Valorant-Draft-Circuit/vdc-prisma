@@ -207,6 +207,7 @@ export class Player {
             bigintFlags.forEach(flag => {
                 if (method === `ADD`) playerFlags |= flag;
                 if (method === `SET`) playerFlags = bigintFlags.reduce((i, f) => i + BigInt(f));
+                // REMOVE doesnt work not sure how to fix it
                 if (method === `REMOVE`) playerFlags &= flag;
                 if (method === `TOGGLE`) playerFlags ^= flag;
             });
@@ -258,7 +259,8 @@ export class Player {
             bigintRoles.forEach(role => {
                 if (method === `ADD`) playerRoles |= role;
                 if (method === `SET`) playerRoles = BigInt((bigintRoles.reduce((i, r) => i + BigInt(r))));
-                if (method === `REMOVE`) playerRoles -= role;
+                // REMOVE doesnt work not sure how to fix it
+                if (method === `REMOVE`) playerRoles &= role;
                 if (method === `TOGGLE`) playerRoles ^= role;
             });
         }
