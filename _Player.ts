@@ -49,27 +49,39 @@ export class Player {
         })
     };
 
-    /** Get a player's stats by their user ID
-     * @param {String} userID
+    /** Get a player's stats by their user ID or Riot IGN
+     * @param {Object} option
+     * @param {string} option.userID
+     * @param {string} option.riotIGN
+     * @param {number} season
      */
-    static async getStatsBy(userID, season) {
-
-        if (userID == undefined) throw new Error(`Must provide a user ID`);
-        // if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
-
-        // const { ign, discordID, riotPUUID } = option;
-
+    static async getStatsBy(option: { userID?: string, riotIGN?: string }, season: number) {
+        
+        if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
+        if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+        
+        const { userID, riotIGN } = option;
+        let resolvedUserID = userID;
+        if (riotIGN) {
+            const account = await prisma.account.findFirst({
+                where: { riotIGN },
+                select: { userId: true }
+            });
+            if (!account) throw new Error(`No user found with riotIGN: ${riotIGN}`);
+            resolvedUserID = account.userId;
+        }
+    
         return await prisma.playerStats.findMany({
             where: {
                 AND: [
-                    { userID: userID },
-                    { Game: { gameType: { equals: GameType.SEASON } } },
-                    { Game: { season: season } }
+                { userID: resolvedUserID },
+                { Game: { gameType: { equals: GameType.SEASON } } },
+                { Game: { season: season } }
                 ]
             },
             include: { Game: { include: { Match: true } } }
         });
-    };
+    }
 
     static async getIGNby(option: {
         discordID: string;
