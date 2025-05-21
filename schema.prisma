@@ -199,6 +199,7 @@ model MapBans {
   type  MapBanType
   team  Int
   map   String
+  side  MapBansSide
 
   Team  Teams   @relation(fields: [team], references: [id])
   Match Matches @relation(fields: [matchID], references: [matchID])
@@ -374,4 +375,9 @@ enum ModLogType {
   FORMAL_WARNING
   MUTE
   BAN
+}
+
+enum MapBansSide {
+  ATTACK
+  DEFENSE
 }
