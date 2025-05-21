@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `4.0.3` | Made `team`, `map` & `side` optional on the `MapBans` table |
 | `4.0.2` | Added `side` to the `MapBans` table with enum `MapBanSide` (values: `ATTACK`, `DEFENSE`) |
 | `4.0.1` | Removed `MID_PLAYOFF` & `END_PLAYOFF` and added `BO3` & `BO5` to `MatchType` enum... again |
 | `4.0.0` | Created the `ModLogs` table with columns `id`, `discordID`, `modID`, `season`, `date`, `type`, `message`, `expires` with types `Int`, `String`, `String`, `Int`, `DateTime`, `ModLogType`, `String`, `DateTime` with relevant relations for `Player` & `Moderator` <br> Updated the `Substitute` table with the following: `userID` > `subID`, Added `subbedID`, Updated relations for `Sub` & `Subbed` player(s) <br> Updated default season values to `8` |

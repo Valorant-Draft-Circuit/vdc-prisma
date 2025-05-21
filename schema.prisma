@@ -197,11 +197,11 @@ model MapBans {
 
   order Int // order denotes the selection. Index at 0
   type  MapBanType
-  team  Int
-  map   String
-  side  MapBansSide
+  team  Int?
+  map   String?
+  side  MapBansSide?
 
-  Team  Teams   @relation(fields: [team], references: [id])
+  Team  Teams?  @relation(fields: [team], references: [id])
   Match Matches @relation(fields: [matchID], references: [matchID])
 }
 
