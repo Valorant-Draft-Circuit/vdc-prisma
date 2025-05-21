@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `4.0.4` | Changed `MapBanType` enum from `DECIDE` to `DECIDER` |
 | `4.0.3` | Made `team`, `map` & `side` optional on the `MapBans` table |
 | `4.0.2` | Added `side` to the `MapBans` table with enum `MapBanSide` (values: `ATTACK`, `DEFENSE`) |
 | `4.0.1` | Removed `MID_PLAYOFF` & `END_PLAYOFF` and added `BO3` & `BO5` to `MatchType` enum... again |

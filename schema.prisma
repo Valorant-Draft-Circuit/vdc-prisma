@@ -366,7 +366,7 @@ enum MapBanType {
   PICK
   BAN
   DISCARD
-  DECIDE
+  DECIDER
 }
 
 enum ModLogType {
