@@ -182,6 +182,7 @@ model Matches {
   matchType     MatchType
   matchDay      Int?
   dateScheduled DateTime
+  group         Int?
   home          Int?
   away          Int?
   Home          Teams?       @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
