@@ -1,68 +1,45 @@
 import { prisma } from "./prismadb";
+import {
+  calculateFantasyPoints,
+  calculatePlayerCost,
+  getPercentile,
+} from "../lib/common/fantasyScoring";
 
 export async function calculatePlayerCosts(season: number) {
-    const stats = await prisma.playerStats.findMany({
-        where: {
-            Game: {
-                is: {
-                    season,
-                },
-            },
-        },
-        include: {
-            Game: true,
-        },
-    });
+  const stats = await prisma.playerStats.findMany({
+    where: { Game: { is: { season } } },
+  });
 
-    const groupedByGame: Record<string, typeof stats> = {};
-    for (const stat of stats) {
-        if (!groupedByGame[stat.gameID]) {
-            groupedByGame[stat.gameID] = [];
-        }
-        groupedByGame[stat.gameID].push(stat);
+  const playerTotals: Record<string, { totalPoints: number; gamesPlayed: number }> = {};
+
+  for (const stat of stats) {
+    const userID = stat.userID;
+    const points = calculateFantasyPoints(stat);
+
+    if (!playerTotals[userID]) {
+      playerTotals[userID] = { totalPoints: 0, gamesPlayed: 0 };
     }
 
-    const categories = ['kills', 'deaths', 'assists', 'firstKills', 'firstDeaths', 'tradeKills', 'tradeDeaths'];
+    playerTotals[userID].totalPoints += points;
+    playerTotals[userID].gamesPlayed += 1;
+  }
 
-    function normalize(value: number, avg: number, min: number, max: number): number {
-        if (value === avg) return 0;
-        if (value > avg) return ((value - avg) / (max - avg)) * 17;    // best = +17 points
-        return ((value - avg) / (avg - min)) * -13;                   // worst = -13 points
-    }
+  const players = Object.entries(playerTotals).map(([userID, { totalPoints, gamesPlayed }]) => ({
+    userID,
+    avgPoints: totalPoints / gamesPlayed,
+  }));
 
-    const playerPointsAccum: Record<string, { totalPoints: number; gamesPlayed: number }> = {};
+  const avgPointsArray = players.map((p) => p.avgPoints);
 
-    for (const [gameID, gameStats] of Object.entries(groupedByGame)) {
-        const statAverages: Record<string, number> = {};
-        const statMins: Record<string, number> = {};
-        const statMaxs: Record<string, number> = {};
+  const playerCost = players.map(({ userID, avgPoints }) => {
+    const percentile = getPercentile(avgPointsArray, avgPoints);
+    const cost = calculatePlayerCost(percentile);
+    return {
+      userID,
+      avgPoints,
+      cost,
+    };
+  });
 
-        for (const cat of categories) {
-            const values = gameStats.map(s => s[cat] ?? 0);
-            statAverages[cat] = values.reduce((a, b) => a + b, 0) / values.length;
-            statMins[cat] = Math.min(...values);
-            statMaxs[cat] = Math.max(...values);
-        }
-
-        for (const stat of gameStats) {
-            let score = 0;
-            for (const cat of categories) {
-                score += normalize(stat[cat] ?? 0, statAverages[cat], statMins[cat], statMaxs[cat]);
-            }
-
-            if (!playerPointsAccum[stat.userID]) {
-                playerPointsAccum[stat.userID] = { totalPoints: 0, gamesPlayed: 0 };
-            }
-
-            playerPointsAccum[stat.userID].totalPoints += score;
-            playerPointsAccum[stat.userID].gamesPlayed += 1;
-        }
-    }
-
-    const playerCosts = Object.entries(playerPointsAccum).map(([userID, data]) => ({
-        userID,
-        averageFantasyPoints: data.totalPoints / data.gamesPlayed,
-    }));
-
-    return playerCosts;
+  return playerCost;
 }
