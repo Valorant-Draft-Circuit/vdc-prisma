@@ -21,7 +21,7 @@ export class Team {
 
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
 
-        const includeParams = { Franchise: { include: { Brand: true } }, Captain: true }
+        const includeParams = { Franchise: { include: { Brand: true } }, Captain: true, Roster: { include: { Accounts: true } } };
 
         if (id) return await prisma.teams.findFirst({
             where: { id: id },
@@ -65,7 +65,7 @@ export class Team {
                         { team: id },
                     ]
                 },
-                include: { Status: true, PrimaryRiotAccount: { include: { MMR: true } }, Captain: true }
+                include: { Accounts: true, Status: true, PrimaryRiotAccount: { include: { MMR: true } }, Captain: true }
             })
         }
     };
