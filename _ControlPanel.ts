@@ -1,5 +1,6 @@
 import { prisma } from "./prismadb";
 import { ControlPanelID } from "./enums/_controlpanel"
+import { MatchType } from "@prisma/client";
 
 export class ControlPanel {
 
@@ -128,19 +129,56 @@ export class ControlPanel {
         return Boolean(response.value);
     }
 
-    /** Set MMR display state */
+    /** Get League state */
     static async getLeagueState() {
         const response = await prisma.controlPanel.findFirst({
             where: { id: ControlPanelID.LEAGUE_STATE }
         });
 
-        if (!response) throw new Error(`Failed to update the database`);
+        if (!response) throw new Error(`Didn't get a response from the database!`);
         return response.value;
     }
 
+    /** Get welcome message */
     static async getWelcomeMessage() {
         const response = await prisma.controlPanel.findFirst({
             where: { id: ControlPanelID.WELCOME_MESSAGE }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return response.value;
+    }
+
+    /** Get matchtype */
+    static async getBanOrder(matchType: MatchType) {
+
+        if (matchType == MatchType.PRE_SEASON) throw new Error(`PRESEASON does not have a valid ban order!`);
+
+        let selection;
+        switch (matchType) {
+            case MatchType.BO2:
+                selection = ControlPanelID.BO2_BAN_ORDER
+                break;
+            case MatchType.BO3:
+                selection = ControlPanelID.BO3_BAN_ORDER
+                break;
+            case MatchType.BO5:
+                selection = ControlPanelID.BO5_BAN_ORDER
+                break;
+        }
+
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: selection }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return response.value;
+    }
+
+    /** Get active map pool */
+    static async getMapPool() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.MAP_POOL }
         });
 
         if (!response) throw new Error(`Didn't get a response from the database!`);
