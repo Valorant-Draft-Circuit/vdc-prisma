@@ -17,5 +17,11 @@ export enum ControlPanelID {
     MMR_DISPLAY_STATE               = 13,
     LEAGUE_STATE                    = 15,
 
+    BO2_BAN_ORDER                   = 16,
+    BO3_BAN_ORDER                   = 17,
+    BO5_BAN_ORDER                   = 18,
+
+    MAP_POOL                        = 19,
+
     WELCOME_MESSAGE                 = 20,
 }
