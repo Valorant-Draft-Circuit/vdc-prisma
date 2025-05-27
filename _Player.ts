@@ -203,7 +203,7 @@ export class Player {
             riotPUUID?: string;
         },
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
-        flags: [Flags] | []
+        flags: [Flags] | Flags[]
     ) {
         const bigintFlags = flags.map(f => BigInt(f));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
@@ -255,7 +255,7 @@ export class Player {
             riotPUUID?: string;
         },
         method: `ADD` | `SET` | `REMOVE` | `TOGGLE`,
-        roles: [Roles] | []
+        roles: [Roles] | Roles[]
     ) {
         const bigintRoles = roles.map(r => BigInt(r));
         if (playerIdentifier == undefined) throw new Error(`Must specify exactly 1 way to identify a user!`);
