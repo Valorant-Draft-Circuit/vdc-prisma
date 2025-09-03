@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Account {
@@ -157,7 +158,7 @@ model MMR {
   mmrBase       Float?
   mmrEffective  Float?
   mmrSeason     Float?
-  lastPulled    DateTime?
+  lastPulled    DateTime? 
   Account       Account?  @relation("MMR")
 }
 
@@ -319,6 +320,7 @@ model ApiAccess {
 }
 
 enum Tier {
+  RECRUIT
   PROSPECT
   APPRENTICE
   EXPERT
@@ -346,6 +348,7 @@ enum GameType {
 enum LeagueStatus {
   UNREGISTERED
   PENDING
+  MANUAL_REVIEW
   APPROVED
   DRAFT_ELIGIBLE
   FREE_AGENT
