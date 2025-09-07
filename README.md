@@ -18,6 +18,7 @@ There are a few steps that need to be completed to update the database with chan
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `s9_baseline` | Baseline the db before implementing s9 changes. |
 | `4.0.5` | Added `group` column to the `Matches` table |
 | `4.0.4` | Changed `MapBanType` enum from `DECIDE` to `DECIDER` |
 | `4.0.3` | Made `team`, `map` & `side` optional on the `MapBans` table |
@@ -50,3 +51,20 @@ There are a few steps that need to be completed to update the database with chan
 | `1.0.2` | Added one-to-one relation for Team in Games table for the winner |
 | `1.0.1` | Changed MMR foreign key relation to have the parent be on the Account table instead of the MMR table |
 | `1.0.0` | Initial Commit/Database Baseline |
+
+
+## CI/CD overview
+
+- **PRs**: the “DB Plan (Prisma)” workflow posts an SQL diff between `main` and the PR’s `schema.prisma` as a sticky comment; full SQL is attached as an artifact.
+- **Merge to `main`**: the “DB Deploy (Prisma)” workflow:
+  1. Applies pending migrations to **dev**.
+  2. Waits for **production** environment approval, then applies to **prod**.
+  3. Creates a **CalVer tag** (e.g., `v2025.09.07.1`) and a GitHub Release.
+
+### Bumping Prisma
+Set the repo Action variable `PRISMA_VERSION` (Settings → Secrets and variables → Actions → Variables). All workflows use `npx prisma@${PRISMA_VERSION}`.
+
+### Creating migrations
+Developers run:
+```bash
+npx prisma migrate dev --create-only -n "change_name"

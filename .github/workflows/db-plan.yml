@@ -1,0 +1,62 @@
+name: DB Plan (Prisma)
+on:
+  pull_request:
+    paths: [ "schema.prisma", "migrations/**" ]
+
+env:
+  PRISMA_VERSION: ${{ vars.PRISMA_VERSION || '6.15.0' }}
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Fetch main
+        run: git fetch origin main
+
+      - name: Extract main schema
+        run: |
+          mkdir -p /tmp/prisma-plan
+          git show origin/main:schema.prisma > /tmp/prisma-plan/schema.main.prisma
+
+      - name: Generate SQL diff (main -> PR)
+        run: |
+          npx --yes prisma@${PRISMA_VERSION} migrate diff \
+            --from-schema-datamodel=/tmp/prisma-plan/schema.main.prisma \
+            --to-schema-datamodel=./schema.prisma \
+            --script > /tmp/prisma-plan/plan.sql
+          npx --yes prisma@${PRISMA_VERSION} migrate diff \
+            --from-schema-datamodel=/tmp/prisma-plan/schema.main.prisma \
+            --to-schema-datamodel=./schema.prisma \
+            > /tmp/prisma-plan/plan.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prisma-plan
+          path: |
+            /tmp/prisma-plan/plan.sql
+            /tmp/prisma-plan/plan.txt
+
+      - id: preview
+        run: |
+          echo '```sql' > /tmp/comment.md
+          head -n 80 /tmp/prisma-plan/plan.sql >> /tmp/comment.md || true
+          echo '' >> /tmp/comment.md
+          echo '... (full plan attached as an artifact)' >> /tmp/comment.md
+          echo '```' >> /tmp/comment.md
+
+      - name: Comment (sticky)
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          message: |
+            **Prisma DB Plan (main → PR)**
+            $(cat /tmp/comment.md)
