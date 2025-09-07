@@ -5,7 +5,6 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
-  // shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Account {
@@ -23,10 +22,12 @@ model Account {
   session_state     String?
   riotIGN           String?
   mmr               Int?      @unique
-  User              User      @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
   MMR               MMR?      @relation("MMR", fields: [mmr], references: [id], onDelete: Cascade)
-  UserAccount       User?     @relation("PrimaryRiotAccount")
+  User              User      @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
   ModLogs           ModLogs[] @relation("ModLogs")
+  UserAccount       User?     @relation("PrimaryRiotAccount")
+
+  @@index([userId], map: "Account_userId_fkey")
 }
 
 model Session {
@@ -35,12 +36,13 @@ model Session {
   userId       String
   expires      DateTime
   User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Session_userId_fkey")
 }
 
 model User {
   id                   String        @id @unique @default(cuid())
   name                 String?
-  // discord name
   team                 Int?
   primaryRiotAccountID String?       @unique
   email                String?       @unique
@@ -49,23 +51,25 @@ model User {
   roles                String        @default("0x0")
   flags                String        @default("0x0")
   createdAt            DateTime      @default(now())
-  Status               Status?       @relation("PlayerStatus")
-  Team                 Teams?        @relation(fields: [team], references: [id])
   Accolades            Accolades[]
-  Records              Records[]
-  PlayerStats          PlayerStats[] @relation("UserPlayerStats")
+  Accounts             Account[]     @relation("Accounts")
   Draft                Draft[]       @relation("PlayerDraftPick")
-  Captain              Teams?        @relation("Captain")
-  GM                   Franchise?    @relation("GM")
   AGM1                 Franchise?    @relation("AGM1")
   AGM2                 Franchise?    @relation("AGM2")
   AGM3                 Franchise?    @relation("AGM3")
-  PrimaryRiotAccount   Account?      @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
-  Accounts             Account[]     @relation("Accounts")
+  GM                   Franchise?    @relation("GM")
+  ModLogs              ModLogs[]     @relation("ModHistory")
+  PlayerStats          PlayerStats[] @relation("UserPlayerStats")
+  Records              Records[]
   sessions             Session[]
+  Status               Status?       @relation("PlayerStatus")
   Substitute           Substitute[]  @relation("Sub")
   SubbedOut            Substitute[]  @relation("Subbed")
-  ModLogs              ModLogs[]     @relation("ModHistory")
+  Captain              Teams?        @relation("Captain")
+  PrimaryRiotAccount   Account?      @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
+  Team                 Teams?        @relation(fields: [team], references: [id])
+
+  @@index([team], map: "User_team_fkey")
 }
 
 model VerificationToken {
@@ -79,9 +83,11 @@ model Accolades {
   userID    String?
   season    Int
   tier      Tier
-  shorthand String
   accolade  String
+  shorthand String
   Player    User?   @relation(fields: [userID], references: [id])
+
+  @@index([userID], map: "Accolades_userID_fkey")
 }
 
 model Records {
@@ -91,6 +97,8 @@ model Records {
   tier   Tier
   record String
   Player User?   @relation(fields: [userID], references: [id])
+
+  @@index([userID], map: "Records_userID_fkey")
 }
 
 model Teams {
@@ -101,15 +109,17 @@ model Teams {
   franchise          Int
   captain            String?       @unique
   midSeasonPlacement Int?
-  Franchise          Franchise     @relation(fields: [franchise], references: [id])
-  Captain            User?         @relation("Captain", fields: [captain], references: [id])
-  Roster             User[]
-  HomeMatches        Matches[]     @relation("HomeMatches")
-  AwayMatches        Matches[]     @relation("AwayMatches")
   GamesWon           Games[]       @relation("GamesWon")
+  MapBans            MapBans[]
+  AwayMatches        Matches[]     @relation("AwayMatches")
+  HomeMatches        Matches[]     @relation("HomeMatches")
   PlayerStats        PlayerStats[]
   Substitutes        Substitute[]
-  MapBans            MapBans[]
+  Captain            User?         @relation("Captain", fields: [captain], references: [id])
+  Franchise          Franchise     @relation(fields: [franchise], references: [id])
+  Roster             User[]
+
+  @@index([franchise], map: "Teams_franchise_fkey")
 }
 
 model Franchise {
@@ -118,33 +128,33 @@ model Franchise {
   slug                  String
   active                Boolean         @default(true)
   roleID                String?
-  transactionsChannelID String?
   gmID                  String?         @unique
   agm1ID                String?         @unique
   agm2ID                String?         @unique
   agm3ID                String?         @unique
-  GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
+  transactionsChannelID String?
+  DraftPicks            Draft[]
   AGM1                  User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
   AGM2                  User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
   AGM3                  User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
-  Teams                 Teams[]
+  GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   Brand                 FranchiseBrand?
-  DraftPicks            Draft[]
+  Teams                 Teams[]
 }
 
 model FranchiseBrand {
   id               Int        @id @unique @default(autoincrement())
   franchise        Int?       @unique
   logo             String?
-  banner           String?
-  discordEmote     String?
   colorPrimary     String?
   colorSecondary   String?
   description      String?    @db.Text
-  draftMessage     String?    @db.Text
   urlDiscord       String?
   urlTwitter       String?
   urlMiscellaneous String?
+  discordEmote     String?
+  banner           String?
+  draftMessage     String?    @db.Text
   Franchise        Franchise? @relation(fields: [franchise], references: [id])
 }
 
@@ -158,53 +168,62 @@ model MMR {
   mmrBase       Float?
   mmrEffective  Float?
   mmrSeason     Float?
-  lastPulled    DateTime? 
+  lastPulled    DateTime?
   Account       Account?  @relation("MMR")
 }
 
 model Substitute {
   id       Int          @id @unique @default(autoincrement())
-  subID    String? // this is the userID of the player who is SUBBING FOR the team
-  matchID  Int?
   team     Int?
-  subbedID String? // this is the userID of the player who is ON THE TEAM needing a sub
   tier     Tier
-  Sub      User?        @relation("Sub", fields: [subID], references: [id])
-  Subbed   User?        @relation("Subbed", fields: [subbedID], references: [id])
+  matchID  Int?
+  subID    String? // this is the userID of the player who is SUBBING FOR the team
+  subbedID String? // this is the userID of the player who is ON THE TEAM needing a sub
   Stats    PlayerStats?
   Match    Matches?     @relation(fields: [matchID], references: [matchID])
+  Sub      User?        @relation("Sub", fields: [subID], references: [id])
+  Subbed   User?        @relation("Subbed", fields: [subbedID], references: [id])
   Team     Teams?       @relation(fields: [team], references: [id])
+
+  @@index([matchID], map: "Substitute_matchID_fkey")
+  @@index([subID], map: "Substitute_subID_fkey")
+  @@index([subbedID], map: "Substitute_subbedID_fkey")
+  @@index([team], map: "Substitute_team_fkey")
 }
 
 model Matches {
   matchID       Int          @id @unique @default(autoincrement())
   tier          Tier
-  season        Int          @default(8)
   matchType     MatchType
-  matchDay      Int?
   dateScheduled DateTime
-  group         Int?
   home          Int?
   away          Int?
-  Home          Teams?       @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
-  Away          Teams?       @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
+  matchDay      Int?
+  season        Int          @default(8)
+  group         Int?
   Games         Games[]
-  Substitutes   Substitute[]
   MapBans       MapBans[]
+  Away          Teams?       @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
+  Home          Teams?       @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
+  Substitutes   Substitute[]
+
+  @@index([away], map: "Away_Team")
+  @@index([home], map: "Home_Team")
 }
 
 model MapBans {
-  id      Int @id @unique @default(autoincrement())
+  id      Int          @id @unique @default(autoincrement())
   matchID Int
+  order   Int // order denotes the selection. Index at 0
+  type    MapBanType
+  team    Int?
+  map     String?
+  side    MapBansSide?
+  Match   Matches      @relation(fields: [matchID], references: [matchID])
+  Team    Teams?       @relation(fields: [team], references: [id])
 
-  order Int // order denotes the selection. Index at 0
-  type  MapBanType
-  team  Int?
-  map   String?
-  side  MapBansSide?
-
-  Team  Teams?  @relation(fields: [team], references: [id])
-  Match Matches @relation(fields: [matchID], references: [matchID])
+  @@index([matchID], map: "MapBans_matchID_fkey")
+  @@index([team], map: "MapBans_team_fkey")
 }
 
 model Games {
@@ -224,6 +243,9 @@ model Games {
   Match         Matches?      @relation(fields: [matchID], references: [matchID])
   WinningTeam   Teams?        @relation("GamesWon", fields: [winner], references: [id])
   PlayerStats   PlayerStats[] @relation("GamePlayerStats")
+
+  @@index([matchID], map: "Games_matchID_fkey")
+  @@index([winner], map: "Games_winner_fkey")
 }
 
 model PlayerStats {
@@ -236,12 +258,10 @@ model PlayerStats {
   ratingAttack  Float?
   ratingDefense Float?
   acs           Int?
-  kast          Int?
   hsPercent     Float?
   kills         Int?
   deaths        Int?
   assists       Int?
-  damage        Int?
   firstKills    Int?
   firstDeaths   Int?
   plants        Int?
@@ -251,14 +271,20 @@ model PlayerStats {
   ecoKills      Int?
   ecoDeaths     Int?
   antiEcoKills  Int?
-  antiEcoDeaths Int?
   exitKills     Int?
   clutches      Int?
   substituteID  Int?        @unique
-  Player        User        @relation("UserPlayerStats", fields: [userID], references: [id])
+  antiEcoDeaths Int?
+  damage        Int?
+  kast          Int?
   Game          Games       @relation("GamePlayerStats", fields: [gameID], references: [gameID], onDelete: Cascade, map: "GamePlayerStats")
-  Team          Teams?      @relation(fields: [team], references: [id])
   Substitute    Substitute? @relation(fields: [substituteID], references: [id])
+  Team          Teams?      @relation(fields: [team], references: [id])
+  Player        User        @relation("UserPlayerStats", fields: [userID], references: [id])
+
+  @@index([gameID], map: "GamePlayerStats")
+  @@index([team], map: "PlayerStats_team_fkey")
+  @@index([userID], map: "PlayerStats_userID_fkey")
 }
 
 model Status {
@@ -280,6 +306,9 @@ model Draft {
   franchise Int?
   Franchise Franchise? @relation(fields: [franchise], references: [id])
   Player    User?      @relation("PlayerDraftPick", fields: [userID], references: [id])
+
+  @@index([franchise], map: "Draft_franchise_fkey")
+  @@index([userID], map: "Draft_userID_fkey")
 }
 
 model ModLogs {
@@ -291,9 +320,11 @@ model ModLogs {
   type      ModLogType
   message   String     @db.Text
   expires   DateTime?
+  Player    Account    @relation("ModLogs", fields: [discordID], references: [providerAccountId])
+  Moderator User       @relation("ModHistory", fields: [modID], references: [id])
 
-  Player    Account? @relation("ModLogs", fields: [discordID], references: [providerAccountId])
-  Moderator User     @relation("ModHistory", fields: [modID], references: [id])
+  @@index([discordID], map: "ModLogs_discordID_fkey")
+  @@index([modID], map: "ModLogs_modID_fkey")
 }
 
 model FAQ {
@@ -316,11 +347,10 @@ model ApiAccess {
   owner            String? // Human readable key owner
   active           Boolean @default(true)
   rateLimit        Int     @default(30) // Default to 30 requests/min
-  allowedEndpoints Json // List of allowed endpoints
+  allowedEndpoints String  @db.LongText // List of allowed endpoints
 }
 
 enum Tier {
-  RECRUIT
   PROSPECT
   APPRENTICE
   EXPERT
@@ -348,7 +378,6 @@ enum GameType {
 enum LeagueStatus {
   UNREGISTERED
   PENDING
-  MANUAL_REVIEW
   APPROVED
   DRAFT_ELIGIBLE
   FREE_AGENT
