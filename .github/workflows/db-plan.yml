@@ -46,17 +46,34 @@ jobs:
             /tmp/prisma-plan/plan.sql
             /tmp/prisma-plan/plan.txt
 
-      - id: preview
+      - name: Build PR comment body
         run: |
-          echo '```sql' > /tmp/comment.md
-          head -n 80 /tmp/prisma-plan/plan.sql >> /tmp/comment.md || true
-          echo '' >> /tmp/comment.md
-          echo '... (full plan attached as an artifact)' >> /tmp/comment.md
-          echo '```' >> /tmp/comment.md
+          ts="$(date -u +"%Y-%m-%d %H:%M:%SZ")"
+          sha="$(git rev-parse --short HEAD)"
+          {
+            echo "**Prisma DB Plan (main → PR) — ${sha}**"
+            echo "_Generated ${ts} • [Workflow run](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})_"
+            echo
+            echo '```sql'
+            head -n 120 /tmp/prisma-plan/plan.sql || true
+            echo
+            echo '```'
+            echo
+            echo "_Full plan attached as artifact: **prisma-plan → plan.sql**_"
+          } > /tmp/comment.md
 
-      - name: Comment (sticky)
-        uses: marocchino/sticky-pull-request-comment@v2
+      - name: Post PR comment (new each run)
+        uses: actions/github-script@v7
         with:
-          message: |
-            **Prisma DB Plan (main → PR)**
-            $(cat /tmp/comment.md)
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const pr = context.payload.pull_request?.number;
+            if (!pr) { core.setFailed('Not a pull_request event'); return; }
+            const body = fs.readFileSync('/tmp/comment.md', 'utf8');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr,
+              body
+            });
