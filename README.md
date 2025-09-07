@@ -55,16 +55,44 @@ There are a few steps that need to be completed to update the database with chan
 
 ## CI/CD overview
 
-- **PRs**: the “DB Plan (Prisma)” workflow posts an SQL diff between `main` and the PR’s `schema.prisma` as a sticky comment; full SQL is attached as an artifact.
-- **Merge to `main`**: the “DB Deploy (Prisma)” workflow:
-  1. Applies pending migrations to **dev**.
-  2. Waits for **production** environment approval, then applies to **prod**.
-  3. Creates a **CalVer tag** (e.g., `v2025.09.07.1`) and a GitHub Release.
+### Pull Requests
+- **DB Plan (Prisma)** posts an SQL diff between `main` and the PR’s `schema.prisma` as a **new comment per run** (previewed ~120 lines).  
+  The full SQL is uploaded as the `prisma-plan` artifact.
 
-### Bumping Prisma
-Set the repo Action variable `PRISMA_VERSION` (Settings → Secrets and variables → Actions → Variables). All workflows use `npx prisma@${PRISMA_VERSION}`.
+### Merge to `main`
+- **DB Deploy (Prisma)**:
+  1. Applies pending migrations to **dev**.
+  2. Waits for **production** environment **approval**, then applies to **prod**.
+  3. **Tags & releases (SemVer)** after prod succeeds.
+
+### Releases (SemVer)
+- **Preferred:** set a version in the PR body (from the template):  
+  `Release Version: vX.Y.Z`  
+  – Must be > last tag.  
+- **Fallback:** if not provided, the workflow bumps based on PR labels:  
+  `semver:major` / `semver:minor` / `semver:patch` (default = patch).  
+- A GitHub Release is created with the same tag.
+
+### Bumping Prisma CLI used in CI
+Set repo Actions **variable** `PRISMA_VERSION` (Settings → Secrets and variables → Actions → Variables).  
+All workflows use `npx prisma@${PRISMA_VERSION}` (no package.json required).
 
 ### Creating migrations
-Developers run:
+Developers run locally, then commit:
 ```bash
 npx prisma migrate dev --create-only -n "change_name"
+```
+CI **does not** generate migrations; it only plans and deploys committed ones.
+
+### Required GitHub settings
+- **Environments**:
+  - `dev` with secret `DEV_DATABASE_URL`
+  - `production` with secret `PROD_DATABASE_URL` and **Required reviewers** enabled
+
+- **Repo labels (for auto-bump)**: `semver:major`, `semver:minor`, `semver:patch`
+
+- **Workflow permissions**: repository → Settings → Actions → **Read and write permissions**
+
+### Drift Checking
+- Nightly **DB Drift Check** opens/updates a tracking issue if the dev DB and schema.prisma diverge.
+  If `.github/CODEOWNERS` lists `prisma/**` or `schema.prisma`, owners are auto-mentioned/assigned.
