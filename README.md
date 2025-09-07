@@ -172,8 +172,6 @@ flowchart TD
   G --> H[Tag and Release SemVer from PR Release Version or labels]
 
   E -- No --> I[Open revert PR optional]
-
-  J[Nightly drift check DB vs schema opens or updates issue and mentions CODEOWNERS] -.-> A
 ```
 
 ---
