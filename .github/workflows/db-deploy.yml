@@ -1,0 +1,182 @@
+name: DB Deploy (Prisma)
+on:
+  push:
+    branches: [main]
+    paths: ['schema.prisma', 'migrations/**']
+
+env:
+  PRISMA_VERSION: ${{ vars.PRISMA_VERSION || '6.15.0' }}
+
+concurrency:
+  group: db-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-dev:
+    name: Deploy to DEV
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Apply migrations to DEV
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: npx --yes prisma@${PRISMA_VERSION} migrate deploy
+
+  deploy-prod:
+    name: Deploy to PROD (manual gate)
+    runs-on: ubuntu-latest
+    needs: deploy-dev
+    environment: production # add required reviewers in repo settings
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Apply migrations to PROD
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: npx --yes prisma@${PRISMA_VERSION} migrate deploy
+
+  tag-and-release:
+    name: Tag & Release (SemVer with PR override)
+    runs-on: ubuntu-latest
+    needs: deploy-prod
+    permissions:
+      contents: write       # create tags + releases
+      pull-requests: read   # read PR body/labels
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      # 1) Find the merged PR and parse "Release Version: vX.Y.Z" from the body
+      - name: Read version from PR body (optional)
+        id: prver
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+            const sha   = context.sha;
+
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner, repo, commit_sha: sha
+            });
+            let requested = '';
+            if (prs.data.length) {
+              prs.data.sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at));
+              const pr = prs.data[0];
+              const body = pr.body || '';
+              const m = body.match(/^\s*Release Version:\s*(v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)\s*$/im);
+              if (m) requested = m[1].startsWith('v') ? m[1] : `v${m[1]}`;
+            }
+            core.setOutput('requested', requested);
+
+      # 2) If PR specified a version, validate it's > last tag and unused
+      - name: Validate requested version
+        id: validate
+        if: steps.prver.outputs.requested != ''
+        shell: bash
+        run: |
+          set -e
+          req="${{ steps.prver.outputs.requested }}"
+          last="$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')"
+
+          # strip 'v' and split
+          req_n="${req#v}"; last_n="${last#v}"
+          IFS=. read -r rqM rqN rqP <<<"$req_n"
+          IFS=. read -r lsM lsN lsP <<<"$last_n"
+
+          # compare req > last
+          if [ "$rqM" -lt "$lsM" ] || { [ "$rqM" -eq "$lsM" ] && [ "$rqN" -lt "$lsN" ]; } || \
+             { [ "$rqM" -eq "$lsM" ] && [ "$rqN" -eq "$lsN" ] && [ "$rqP" -le "$lsP" ]; }; then
+            echo "Requested version $req must be greater than last tag $last"; exit 1; fi
+
+          if git rev-parse "$req" >/dev/null 2>&1; then
+            echo "Tag $req already exists"; exit 1; fi
+
+          echo "next=$req" >> "$GITHUB_OUTPUT"
+
+      # 3) Otherwise decide bump from PR labels (then default to patch)
+      - name: Decide bump (labels → semver)
+        id: bump
+        if: steps.prver.outputs.requested == ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+            const sha   = context.sha;
+
+            const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+              owner, repo, commit_sha: sha
+            });
+            let bump = 'patch';
+            if (prs.data.length) {
+              prs.data.sort((a,b)=> new Date(b.updated_at) - new Date(a.updated_at));
+              const pr = prs.data[0];
+              const labels = (pr.labels || []).map(l => l.name);
+              if (labels.includes('semver:major')) bump = 'major';
+              else if (labels.includes('semver:minor')) bump = 'minor';
+              else if (labels.includes('semver:patch')) bump = 'patch';
+              else {
+                // lightweight CC sniff
+                const commits = await github.rest.pulls.listCommits({ owner, repo, pull_number: pr.number });
+                for (const c of commits.data) {
+                  const m = (c.commit.message || '');
+                  if (m.includes('BREAKING CHANGE') || /!:/m.test(m)) { bump = 'major'; break; }
+                  if (/^feat(\(|:)/m.test(m) && bump !== 'major') bump = 'minor';
+                }
+              }
+            }
+            core.setOutput('bump', bump);
+
+      - name: Compute next version
+        id: ver
+        shell: bash
+        run: |
+          set -e
+          if [ -n "${{ steps.validate.outputs.next }}" ]; then
+            echo "next=${{ steps.validate.outputs.next }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          last="$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')"
+          major=$(echo "$last" | sed 's/^v//' | cut -d. -f1)
+          minor=$(echo "$last" | sed 's/^v//' | cut -d. -f2)
+          patch=$(echo "$last" | sed 's/^v//' | cut -d. -f3)
+
+          case "${{ steps.bump.outputs.bump }}" in
+            major) major=$((major+1)); minor=0; patch=0 ;;
+            minor) minor=$((minor+1)); patch=0 ;;
+            *)     patch=$((patch+1)) ;;
+          esac
+
+          next="v${major}.${minor}.${patch}"
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git rev-parse "${{ steps.ver.outputs.next }}" >/dev/null 2>&1; then
+            echo "Tag exists: ${{ steps.ver.outputs.next }} — skipping push."
+          else
+            git tag -a "${{ steps.ver.outputs.next }}" -m "Release ${{ steps.ver.outputs.next }}"
+            git push origin "${{ steps.ver.outputs.next }}"
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.next }}
+          name:     ${{ steps.ver.outputs.next }}
+          generate_release_notes: true
+

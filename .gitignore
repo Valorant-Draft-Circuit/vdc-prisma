@@ -3,3 +3,6 @@
 !prismadb.js
 # These will be compiled/generated locally & on deployment #####
 ################################################################
+.env
+node_modules
+package.json

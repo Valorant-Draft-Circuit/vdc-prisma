@@ -1,0 +1,149 @@
+name: DB Drift Check
+
+on:
+  schedule:
+    - cron: "17 6 * * *"   # daily @ 06:17 UTC
+  workflow_dispatch: {}     # allow manual runs
+
+env:
+  PRISMA_VERSION: ${{ vars.PRISMA_VERSION || '6.15.0' }}
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    environment: dev
+    permissions:
+      contents: read
+      issues: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Compute drift SQL (dev DB → repo schema)
+        id: diff
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        shell: bash
+        run: |
+          set -e
+          # Produce SQL needed to go from DB state to schema.prisma
+          npx --yes prisma@${PRISMA_VERSION} migrate diff \
+            --from-url="$DATABASE_URL" \
+            --to-schema-datamodel=./schema.prisma \
+            --script > /tmp/drift.sql || true
+
+          # Remove comments/blank lines to detect real changes
+          grep -v -E '^(--|/\\*|\\*/|\\s*$)' /tmp/drift.sql > /tmp/drift.body || true
+          BYTES=$(wc -c < /tmp/drift.body | tr -d ' ')
+          echo "DRIFT_BYTES=$BYTES" >> $GITHUB_ENV
+
+      - name: Upload drift artifact
+        if: env.DRIFT_BYTES != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: prisma-drift-sql
+          path: /tmp/drift.sql
+          retention-days: 14
+
+      - name: Resolve CODEOWNERS for prisma paths
+        if: env.DRIFT_BYTES != '0'
+        id: owners
+        shell: bash
+        run: |
+          file=".github/CODEOWNERS"
+          owners=""
+          if [ -f "$file" ]; then
+            # Collect owners for lines that target prisma schema/migrations
+            owners=$(awk '
+              NF>1 {
+                path=$1
+                o=""
+                for (i=2;i<=NF;i++) o=o" "$i
+                # Match common patterns
+                if (path=="schema.prisma" \
+                  || path=="prisma/schema.prisma" \
+                  || path=="migrations/" || path=="migrations/**" \
+                  || path=="prisma/migrations/" || path=="prisma/migrations/**" \
+                  || path=="prisma/**" || path=="**/*.prisma" ) {
+                  print o
+                }
+              }' "$file" | tr " " "\n" | grep '^@' | sort -u)
+          fi
+
+          # Users (assignable) = @user (no slash)
+          assignees=$(echo "$owners" | grep -v '/' | sed 's/@//' | tr '\n' ',' | sed 's/,$//')
+          # Mentions (include teams) for the issue body
+          mentions=$(echo "$owners" | paste -sd" " -)
+
+          echo "assignees=$assignees" >> $GITHUB_OUTPUT
+          echo "mentions=$mentions"   >> $GITHUB_OUTPUT
+
+      - name: Open or update drift issue
+        if: env.DRIFT_BYTES != '0'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          mentions: ${{ steps.owners.outputs.mentions }}
+          assignees_csv: ${{ steps.owners.outputs.assignees }}
+          script: |
+            const fs = require('fs');
+            const tag = 'db-drift';
+            const owner = context.repo.owner;
+            const repo  = context.repo.repo;
+
+            // Ensure label exists
+            try {
+              await github.rest.issues.getLabel({ owner, repo, name: tag });
+            } catch {
+              await github.rest.issues.createLabel({
+                owner, repo, name: tag, color: 'B60205',
+                description: 'Schema differs from database'
+              }).catch(()=>{});
+            }
+
+            // Read (truncate) SQL for the issue body preview
+            let sql = fs.readFileSync('/tmp/drift.sql', 'utf8');
+            if (sql.length > 4000) sql = sql.slice(0, 4000) + '\n-- (truncated; see artifact)';
+
+            const mentions = core.getInput('mentions') || '';
+            const body = [
+              'Prisma drift detected between **dev DB** and repo `schema.prisma`.',
+              '',
+              '**Preview (SQL to align DB → schema):**',
+              '```sql',
+              sql,
+              '```',
+              '',
+              'Full SQL attached as workflow artifact: `prisma-drift-sql`.',
+              '',
+              mentions ? `Owners: ${mentions}` : ''
+            ].join('\n');
+
+            // Find an open drift issue; reuse it
+            const { data: existing } = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: tag
+            });
+
+            const assigneesCsv = core.getInput('assignees_csv') || '';
+            const assignees = assigneesCsv ? assigneesCsv.split(',').filter(Boolean) : [];
+
+            if (existing.length) {
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing[0].number, body
+              });
+            } else {
+              await github.rest.issues.create({
+                owner, repo,
+                title: 'Prisma drift detected: dev DB out of sync',
+                body, labels: [tag],
+                assignees
+              });
+            }
+
+      - name: No drift — exit cleanly
+        if: env.DRIFT_BYTES == '0'
+        run: echo "No drift detected."
