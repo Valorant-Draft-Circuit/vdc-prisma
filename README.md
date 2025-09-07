@@ -1,19 +1,122 @@
 # vdc-prisma
 This repository is a Typescript library to interface with the VDC development, staging and production databases.
 
+- [vdc-prisma](#vdc-prisma)
+  - [Updating the database](#updating-the-database)
+    - [Prereqs](#prereqs)
+    - [Steps](#steps)
+    - [Notes \& gotchas](#notes--gotchas)
+  - [CI/CD overview](#cicd-overview)
+    - [Pull Requests](#pull-requests)
+    - [Merge to `main`](#merge-to-main)
+    - [Releases (SemVer)](#releases-semver)
+    - [Bumping Prisma CLI used in CI](#bumping-prisma-cli-used-in-ci)
+    - [Creating migrations](#creating-migrations)
+    - [Required GitHub settings](#required-github-settings)
+    - [Drift Checking](#drift-checking)
+  - [Database Changelog](#database-changelog)
+  - [System Diagram](#system-diagram)
+  - [Archive](#archive)
+
+
 ## Updating the database
-There are a few steps that need to be completed to update the database with changes.
-1. Create a backup of the development database using the `Export` tab in [`phpMyAdmin`](https://univps.vps.webdock.cloud/phpmyadmin/index.php)
-2. Update the [`./schema.prisma`](./schema.prisma) file with changes
-3. Run `npx prisma migrate dev -n x.x.x` where the "x.x.x" follows the `major.minor.patch` version naming convention. Major patches are denoted by adding new tables or significant sweeping updates, Minor updates are denoted by adding columns or sweeping patch updates, and all else will bump the patch number. If the `prisma migrate` command throws any issues, follow the substeps below, otherwise continue to step 4.
-    - Delete the migration file created by the `migrate dev` command (if applicable) from the [`migrations`](./migrations/) folder
-    - Reset the database using `npx prisma migrate reset`. This destroys the database, all it's data and rebuilds it from the migrations.
-    - Make changes, and repeat step 2 & 3 until the `prisma migrate dev` command runs successfully
-4. Update the [Changelog](#changelog) below with a comment of what has changed, and then send a message to the [`#updates`](https://discord.com/channels/1027754353207033966/1220564786765500477) channel with that same message. You can also copy & paste the following:
-    ```
-    New <@&1220563705293574266> - `vX.X.X`
-    - UPDATE_MESSAGE
-    ```
+
+This repo uses Prisma migrations + GitHub Actions to **plan**, **deploy**, and **release** changes. You don't need to bump versions in migration folder names or run anything against prod locally.
+
+
+### Prereqs
+- Your local `.env` has a **dev** DB `DATABASE_URL=...`.
+- Your branch is up to date with `main`.
+
+### Steps
+
+1) **(Optional) Back up dev**
+   - phpMyAdmin export or `mysqldump` as a safety net.
+
+2) **Edit the schema**
+   - Update [`schema.prisma`](./schema.prisma).
+
+3) **Create a migration (do not apply to prod locally)**
+   ```bash
+   npx prisma migrate dev --create-only -n "vX.Y.Z"
+   ```
+   Note: "vX.Y.Z" follows the `major.minor.patch` version naming convention. 
+   - Major patches are denoted by adding new tables or significant sweeping updates, 
+   - Minor updates are denoted by adding columns or sweeping patch updates, 
+   - and all else will bump the patch number.
+
+4) **Commit and open a PR**
+   - Commit `schema.prisma` and the new `migrations/<timestamp>_<name>/migration.sql`.
+   - Open a PR. The **DB Plan (Prisma)** workflow comments an SQL preview and uploads the full plan as an artifact.
+
+5) **Choose the release version**
+   - In the PR description (template field), optionally set:
+     ```
+     Release Version: vX.Y.Z
+     ```
+     If omitted, CI bumps SemVer from labels:
+     - `semver:major` / `semver:minor` / `semver:patch` (default = patch).
+
+6) **Merge the PR**
+   - On merge to `main`, **DB Deploy (Prisma)**:
+     1. runs `migrate deploy` on **dev**,
+     2. **waits for approval** on the `production` environment,
+     3. runs `migrate deploy` on **prod**,
+     4. creates a **SemVer tag** and a GitHub Release.
+
+7) **Consumers update**
+   - Downstream repos pin to the new tag (e.g., `v5.0.2`).
+
+### Notes & gotchas
+- **Do not** run `migrate reset` or prod migrations locally, CI handles prod after approval.
+- If the PR plan shows "no changes," you likely skipped step 3 (create the migration).
+- Prefer additive changes on MySQL/MariaDB (add → backfill → switch → drop later).
+- A nightly **Drift Check** (if enabled) opens/updates an issue when the DB and `schema.prisma` diverge.
+
+## CI/CD overview
+
+### Pull Requests
+- **DB Plan (Prisma)** posts an SQL diff between `main` and the PR's `schema.prisma` as a **new comment per run** (previewed ~120 lines).  
+  The full SQL is uploaded as the `prisma-plan` artifact.
+
+### Merge to `main`
+- **DB Deploy (Prisma)**:
+  1. Applies pending migrations to **dev**.
+  2. Waits for **production** environment **approval**, then applies to **prod**.
+  3. **Tags & releases (SemVer)** after prod succeeds.
+
+### Releases (SemVer)
+- **Preferred:** set a version in the PR body (from the template):  
+  `Release Version: vX.Y.Z`  
+  - Must be > last tag.  
+- **Fallback:** if not provided, the workflow bumps based on PR labels:  
+  `semver:major` / `semver:minor` / `semver:patch` (default = patch).  
+- A GitHub Release is created with the same tag.
+
+### Bumping Prisma CLI used in CI
+Set repo Actions **variable** `PRISMA_VERSION` (Settings → Secrets and variables → Actions → Variables).  
+All workflows use `npx prisma@${PRISMA_VERSION}` (no package.json required).
+
+### Creating migrations
+Developers run locally, then commit:
+```bash
+npx prisma migrate dev --create-only -n "change_name"
+```
+CI **does not** generate migrations; it only plans and deploys committed ones.
+
+### Required GitHub settings
+- **Environments**:
+  - `dev` with secret `DEV_DATABASE_URL`
+  - `production` with secret `PROD_DATABASE_URL` and **Required reviewers** enabled
+
+- **Repo labels (for auto-bump)**: `semver:major`, `semver:minor`, `semver:patch`
+
+- **Workflow permissions**: repository → Settings → Actions → **Read and write permissions**
+
+### Drift Checking
+- Nightly **DB Drift Check** opens/updates a tracking issue if the dev DB and schema.prisma diverge.
+  If `.github/CODEOWNERS` lists `prisma/**` or `schema.prisma`, owners are auto-mentioned/assigned.
+
 
 ## Database Changelog
 | Version | Comments/Updates |
@@ -53,46 +156,37 @@ There are a few steps that need to be completed to update the database with chan
 | `1.0.0` | Initial Commit/Database Baseline |
 
 
-## CI/CD overview
+## System Diagram
+```mermaid
+flowchart TD
+  A[Push schema.prisma and migrations -> open PR]
+  B[PR plan SQL diff comment and artifact]
+  C[Merge to main]
+  D[Deploy to DEV - prisma migrate deploy]
+  E{DEV deploy successful}
 
-### Pull Requests
-- **DB Plan (Prisma)** posts an SQL diff between `main` and the PR’s `schema.prisma` as a **new comment per run** (previewed ~120 lines).  
-  The full SQL is uploaded as the `prisma-plan` artifact.
+  A --> B --> C --> D --> E
 
-### Merge to `main`
-- **DB Deploy (Prisma)**:
-  1. Applies pending migrations to **dev**.
-  2. Waits for **production** environment **approval**, then applies to **prod**.
-  3. **Tags & releases (SemVer)** after prod succeeds.
+  E -- Yes --> F[Wait for approval on production environment]
+  F --> G[Deploy to PROD - prisma migrate deploy]
+  G --> H[Tag and Release SemVer from PR Release Version or labels]
 
-### Releases (SemVer)
-- **Preferred:** set a version in the PR body (from the template):  
-  `Release Version: vX.Y.Z`  
-  – Must be > last tag.  
-- **Fallback:** if not provided, the workflow bumps based on PR labels:  
-  `semver:major` / `semver:minor` / `semver:patch` (default = patch).  
-- A GitHub Release is created with the same tag.
-
-### Bumping Prisma CLI used in CI
-Set repo Actions **variable** `PRISMA_VERSION` (Settings → Secrets and variables → Actions → Variables).  
-All workflows use `npx prisma@${PRISMA_VERSION}` (no package.json required).
-
-### Creating migrations
-Developers run locally, then commit:
-```bash
-npx prisma migrate dev --create-only -n "change_name"
+  E -- No --> I[Open revert PR optional]
 ```
-CI **does not** generate migrations; it only plans and deploys committed ones.
 
-### Required GitHub settings
-- **Environments**:
-  - `dev` with secret `DEV_DATABASE_URL`
-  - `production` with secret `PROD_DATABASE_URL` and **Required reviewers** enabled
+---
+## Archive
+The below is an archive of the old updating the db section
 
-- **Repo labels (for auto-bump)**: `semver:major`, `semver:minor`, `semver:patch`
-
-- **Workflow permissions**: repository → Settings → Actions → **Read and write permissions**
-
-### Drift Checking
-- Nightly **DB Drift Check** opens/updates a tracking issue if the dev DB and schema.prisma diverge.
-  If `.github/CODEOWNERS` lists `prisma/**` or `schema.prisma`, owners are auto-mentioned/assigned.
+There are a few steps that need to be completed to update the database with changes.
+1. Create a backup of the development database using the `Export` tab in [`phpMyAdmin`](#)
+2. Update the [`./schema.prisma`](./schema.prisma) file with changes
+3. Run `npx prisma migrate dev -n x.x.x` where the "x.x.x" follows the `major.minor.patch` version naming convention. Major patches are denoted by adding new tables or significant sweeping updates, Minor updates are denoted by adding columns or sweeping patch updates, and all else will bump the patch number. If the `prisma migrate` command throws any issues, follow the substeps below, otherwise continue to step 4.
+    - Delete the migration file created by the `migrate dev` command (if applicable) from the [`migrations`](./migrations/) folder
+    - Reset the database using `npx prisma migrate reset`. This destroys the database, all it's data and rebuilds it from the migrations.
+    - Make changes, and repeat step 2 & 3 until the `prisma migrate dev` command runs successfully
+4. Update the [Changelog](#changelog) below with a comment of what has changed, and then send a message to the [`#updates`](https://discord.com/channels/1027754353207033966/1220564786765500477) channel with that same message. You can also copy & paste the following:
+    ```
+    New <@&1220563705293574266> - `vX.X.X`
+    - UPDATE_MESSAGE
+    ```
