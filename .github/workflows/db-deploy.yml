@@ -7,6 +7,10 @@ on:
 env:
   PRISMA_VERSION: ${{ vars.PRISMA_VERSION || '6.15.0' }}
 
+concurrency:
+  group: db-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   deploy-dev:
     name: Deploy to DEV

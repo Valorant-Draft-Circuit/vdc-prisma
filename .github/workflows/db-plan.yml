@@ -6,6 +6,10 @@ on:
 env:
   PRISMA_VERSION: ${{ vars.PRISMA_VERSION || '6.15.0' }}
 
+concurrency:
+  group: db-plan-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   plan:
     runs-on: ubuntu-latest
