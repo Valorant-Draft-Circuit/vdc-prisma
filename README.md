@@ -15,12 +15,14 @@ This repository is a Typescript library to interface with the VDC development, s
     - [Required GitHub settings](#required-github-settings)
     - [Drift Checking](#drift-checking)
   - [Database Changelog](#database-changelog)
+  - [System Diagram](#system-diagram)
   - [Archive](#archive)
 
 
 ## Updating the database
 
 This repo uses Prisma migrations + GitHub Actions to **plan**, **deploy**, and **release** changes. You don't need to bump versions in migration folder names or run anything against prod locally.
+
 
 ### Prereqs
 - Your local `.env` has a **dev** DB `DATABASE_URL=...`.
@@ -152,6 +154,27 @@ CI **does not** generate migrations; it only plans and deploys committed ones.
 | `1.0.2` | Added one-to-one relation for Team in Games table for the winner |
 | `1.0.1` | Changed MMR foreign key relation to have the parent be on the Account table instead of the MMR table |
 | `1.0.0` | Initial Commit/Database Baseline |
+
+
+## System Diagram
+```mermaid
+flowchart TD
+  A[Push schema.prisma and migrations -> open PR]
+  B[PR plan SQL diff comment and artifact]
+  C[Merge to main]
+  D[Deploy to DEV - prisma migrate deploy]
+  E{DEV deploy successful}
+
+  A --> B --> C --> D --> E
+
+  E -- Yes --> F[Wait for approval on production environment]
+  F --> G[Deploy to PROD - prisma migrate deploy]
+  G --> H[Tag and Release SemVer from PR Release Version or labels]
+
+  E -- No --> I[Open revert PR optional]
+
+  J[Nightly drift check DB vs schema opens or updates issue and mentions CODEOWNERS] -.-> A
+```
 
 ---
 ## Archive
