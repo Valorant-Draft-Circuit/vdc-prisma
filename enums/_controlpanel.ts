@@ -17,13 +17,14 @@ export enum ControlPanelID {
     DRAFT_TRADES_OPEN               = 13,
     OFFLINE_DRAFT_OPEN              = 14,
     MMR_DISPLAY_STATE               = 15,
-    LEAGUE_STATE                    = 16,
+    DISPLAY_MMR_FM                  = 16,
+    LEAGUE_STATE                    = 17,
 
-    BO2_BAN_ORDER                   = 17,
-    BO3_BAN_ORDER                   = 18,
-    BO5_BAN_ORDER                   = 19,
+    BO2_BAN_ORDER                   = 18,
+    BO3_BAN_ORDER                   = 19,
+    BO5_BAN_ORDER                   = 20,
 
-    MAP_POOL                        = 20,
+    MAP_POOL                        = 21,
 
-    WELCOME_MESSAGE                 = 21,
+    WELCOME_MESSAGE                 = 22,
 }

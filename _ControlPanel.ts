@@ -116,7 +116,7 @@ export class ControlPanel {
         return Boolean(response.value);
     }
 
-    /** Get MMR display state */
+    /** Get public MMR state */
     static async getMMRDisplayState() {
         const response = await prisma.controlPanel.findFirst({
             where: { id: ControlPanelID.MMR_DISPLAY_STATE }
@@ -126,10 +126,31 @@ export class ControlPanel {
         return response.value == `true` ? true : false;
     }
 
-    /** Set MMR display state */
+    /** Set public MMR state */
     static async setMMRDisplayState(state: boolean) {
         const response = await prisma.controlPanel.update({
-            where: { id: ControlPanelID.SEASON },
+            where: { id: ControlPanelID.MMR_DISPLAY_STATE },
+            data: { value: String(state) }
+        });
+
+        if (!response) throw new Error(`Failed to update the database`);
+        return Boolean(response.value);
+    }
+
+    /** Get FM MMR state */
+    static async getDisplayMMRFM() {
+        const response = await prisma.controlPanel.findFirst({
+            where: { id: ControlPanelID.DISPLAY_MMR_FM }
+        });
+
+        if (!response) throw new Error(`Didn't get a response from the database!`);
+        return response.value == `true` ? true : false;
+    }
+
+    /** Set FM MMR state */
+    static async setDisplayMMRFM(state: boolean) {
+        const response = await prisma.controlPanel.update({
+            where: { id: ControlPanelID.DISPLAY_MMR_FM },
             data: { value: String(state) }
         });
 
