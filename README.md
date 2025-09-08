@@ -121,6 +121,7 @@ CI **does not** generate migrations; it only plans and deploys committed ones.
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `v5.1.0` | Added `RECRUIT` Tier to ENUM's, Updated Season Defaults to `9`, Added `MANUAL_REVIEW` to playerstatus ENUM |
 | `s9_baseline` | Baseline the db before implementing s9 changes. |
 | `4.0.5` | Added `group` column to the `Matches` table |
 | `4.0.4` | Changed `MapBanType` enum from `DECIDE` to `DECIDER` |
