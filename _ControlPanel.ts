@@ -29,19 +29,23 @@ export class ControlPanel {
     static async getMMRCaps(type: `PLAYER` | `TEAM`) {
 
         if (type !== `PLAYER` && type !== `TEAM`) throw new Error(`Invalid type of MMR cap requested. Please request either "PLAYER" or "TEAM"!`);
-
+        
         if (type === `PLAYER`) {
             // get MMR tier lines from the database
             const response = await prisma.controlPanel.findMany({ where: { name: { contains: `mmr_cap_player` } } });
 
             if (!response) throw new Error(`Didn't get a response from the database!`);
 
+            // in the future update this to use a more dynamic way of getting the tiers
+            const recruitMMRCap = response.find((r) => r.name === `recruit_mmr_cap_player`)?.value;
             const prospectMMRCap = response.find((r) => r.name === `prospect_mmr_cap_player`)?.value;
             const apprenticeMMRCap = response.find((r) => r.name === `apprentice_mmr_cap_player`)?.value;
             const expertMMRCap = response.find((r) => r.name === `expert_mmr_cap_player`)?.value;
 
             return {
-                PROSPECT: { min: 0, max: Number(prospectMMRCap) },
+                // read line 39
+                RECRUIT: { min: 0, max: Number(recruitMMRCap) },
+                PROSPECT: { min: Number(recruitMMRCap) + 1, max: Number(prospectMMRCap) },
                 APPRENTICE: { min: Number(prospectMMRCap) + 1, max: Number(apprenticeMMRCap) },
                 EXPERT: { min: Number(apprenticeMMRCap) + 1, max: Number(expertMMRCap) },
                 MYTHIC: { min: Number(expertMMRCap) + 1, max: 999 },
@@ -52,12 +56,16 @@ export class ControlPanel {
 
             if (!response) throw new Error(`Didn't get a response from the database!`);
 
+            // read line 39
+            const recruitMMRCap = response.find((r) => r.name === `recruit_mmr_cap_team`)?.value;
             const prospectMMRCap = response.find((r) => r.name === `prospect_mmr_cap_team`)?.value;
             const apprenticeMMRCap = response.find((r) => r.name === `apprentice_mmr_cap_team`)?.value;
             const expertMMRCap = response.find((r) => r.name === `expert_mmr_cap_team`)?.value;
             const mythicMMRCap = response.find((r) => r.name === `mythic_mmr_cap_team`)?.value;
 
             return {
+                // read line 39
+                RECRUIT: Number(recruitMMRCap),
                 PROSPECT: Number(prospectMMRCap),
                 APPRENTICE: Number(apprenticeMMRCap),
                 EXPERT: Number(expertMMRCap),

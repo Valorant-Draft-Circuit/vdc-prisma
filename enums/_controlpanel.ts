@@ -3,10 +3,12 @@ export enum ControlPanelID {
     ACTIVITY_CHECK_STATE            = 2,
     SEASON                          = 3,
 
+    RECRUIT_MMR_CAP_PLAYER          = 21,
     PROSPECT_MMR_CAP_PLAYER         = 4,
     APPRENTICE_MMR_CAP_PLAYER       = 5,
     EXPERT_MMR_CAP_PLAYER           = 6,
 
+    RECRUIT_MMR_CAP_TEAM            = 22,
     PROSPECT_MMR_CAP_TEAM           = 7,
     APPRENTICE_MMR_CAP_TEAM         = 8,
     EXPERT_MMR_CAP_TEAM             = 9,
