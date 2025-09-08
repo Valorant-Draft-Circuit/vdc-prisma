@@ -11,7 +11,7 @@ export class Games {
         const { id, type, tier } = options;
 
         if (!/([a-z0-9]{8})-([a-z0-9]{4}-){3}([a-z0-9]{12})$/.test(id)) throw new Error(`Invalid Match ID!`);
-
+        // TODO: double check with kirbs about the route and the data being sent
         return await fetch(`https://numbers.vdc.gg/game/submit?matchId=${id}&gameType=${type}&tier=${tier}`, { method: `GET` });
     };
 
