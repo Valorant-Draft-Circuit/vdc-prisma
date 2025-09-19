@@ -12,7 +12,14 @@ export class Games {
 
         if (!/([a-z0-9]{8})-([a-z0-9]{4}-){3}([a-z0-9]{12})$/.test(id)) throw new Error(`Invalid Match ID!`);
         // TODO: double check with kirbs about the route and the data being sent
-        return await fetch(`https://numbers.vdc.gg/game/submit?matchId=${id}&gameType=${type}&tier=${tier}`, { method: `GET` });
+        return await fetch(`https://numbers.vdc.gg/gameSubmit`, { 
+            method: `POST`,
+            body: JSON.stringify({
+                'game_id': id,
+                'game_type': type,
+                'tier': tier
+            }),
+         });
     };
 
     static async exists(options: { id: string }) {
