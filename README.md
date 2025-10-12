@@ -38,7 +38,7 @@ This repo uses Prisma migrations + GitHub Actions to **plan**, **deploy**, and *
 
 3) **Create a migration (do not apply to prod locally)**
    ```bash
-   npx prisma migrate dev --create-only -n "vX.Y.Z"
+   npx prisma@6.15.0 migrate dev --create-only -n "vX.Y.Z"
    ```
    Note: "vX.Y.Z" follows the `major.minor.patch` version naming convention. 
    - Major patches are denoted by adding new tables or significant sweeping updates, 

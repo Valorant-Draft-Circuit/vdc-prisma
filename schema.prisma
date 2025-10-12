@@ -48,6 +48,7 @@ model User {
   email                String?       @unique
   emailVerified        DateTime?
   image                String?
+  banner               String?
   roles                String        @default("0x0")
   flags                String        @default("0x0")
   createdAt            DateTime      @default(now())
