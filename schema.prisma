@@ -58,6 +58,7 @@ model User {
   AGM1                 Franchise?    @relation("AGM1")
   AGM2                 Franchise?    @relation("AGM2")
   AGM3                 Franchise?    @relation("AGM3")
+  AGM4                 Franchise?    @relation("AGM4")
   GM                   Franchise?    @relation("GM")
   ModLogs              ModLogs[]     @relation("ModHistory")
   PlayerStats          PlayerStats[] @relation("UserPlayerStats")
@@ -133,11 +134,13 @@ model Franchise {
   agm1ID                String?         @unique
   agm2ID                String?         @unique
   agm3ID                String?         @unique
+  agm4ID                String?         @unique
   transactionsChannelID String?
   DraftPicks            Draft[]
   AGM1                  User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
   AGM2                  User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
   AGM3                  User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
+  AGM4                  User?           @relation("AGM4", fields: [agm4ID], references: [id], map: "Franchise_AGM4")
   GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   Brand                 FranchiseBrand?
   Teams                 Teams[]
