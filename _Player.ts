@@ -134,6 +134,7 @@ export class Player {
                             AGM1: { include: { Accounts: true } },
                             AGM2: { include: { Accounts: true } },
                             AGM3: { include: { Accounts: true } },
+                            AGM4: { include: { Accounts: true } }, 
                         }
                     }
                 }

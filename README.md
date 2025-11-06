@@ -121,6 +121,8 @@ CI **does not** generate migrations; it only plans and deploys committed ones.
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `v5.2.1` | Added optional `agm4ID` in the `Franchise` table and it's respective `AGM4` relation in the `User` table |
+| `5.2.0` | Added `banner` column to the `User` table |
 | `v5.1.0` | Added `RECRUIT` Tier to ENUM's, Updated Season Defaults to `9`, Added `MANUAL_REVIEW` to playerstatus ENUM |
 | `s9_baseline` | Baseline the db before implementing s9 changes. |
 | `4.0.5` | Added `group` column to the `Matches` table |
