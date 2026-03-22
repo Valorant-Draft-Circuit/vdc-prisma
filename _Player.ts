@@ -1,6 +1,6 @@
 import { prisma } from "./prismadb";
 import { GameType, LeagueStatus } from "@prisma/client";
-import { Flags, Roles } from "./index"
+import { ControlPanel, Flags, Roles } from "./index"
 
 const sum = (array) => array.reduce((s, v) => s += v == null ? 0 : v, 0);
 
@@ -120,29 +120,46 @@ export class Player {
 
         if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+        const shouldFetchMmr = await ControlPanel.getMMRDisplayState();
 
         const includeParams = {
-            PrimaryRiotAccount: { include: { MMR: true } },
-            Accounts: { include: { MMR: true } },
-            Status: true,
-            Team: {
-                include: {
-                    Franchise: {
-                        include: {
-                            Brand: true,
-                            GM: { include: { Accounts: true } },
-                            AGM1: { include: { Accounts: true } },
-                            AGM2: { include: { Accounts: true } },
-                            AGM3: { include: { Accounts: true } },
-                            AGM4: { include: { Accounts: true } }, 
-                        }
-                    }
-                }
+          PrimaryRiotAccount: {
+            include: {
+              MMR: {
+                select: { mmrEffective: shouldFetchMmr },
+              },
+              access_token: false,
+              refresh_token: false,
             },
-            Accolades: true,
-            Records: true,
-            Captain: true,
-        }
+          },
+          Accounts: {
+            include: {
+              MMR: {
+                select: { mmrEffective: shouldFetchMmr },
+              },
+              access_token: false,
+              refresh_token: false,
+            },
+          },
+          Status: true,
+          Team: {
+            include: {
+              Franchise: {
+                include: {
+                  Brand: true,
+                  GM: { include: { Accounts: true } },
+                  AGM1: { include: { Accounts: true } },
+                  AGM2: { include: { Accounts: true } },
+                  AGM3: { include: { Accounts: true } },
+                  AGM4: { include: { Accounts: true } },
+                },
+              },
+            },
+          },
+          Accolades: true,
+          Records: true,
+          Captain: true,
+        };
 
         const { ign, userID, discordID, riotPUUID } = option;
 
