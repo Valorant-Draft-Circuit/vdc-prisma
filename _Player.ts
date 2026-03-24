@@ -120,26 +120,31 @@ export class Player {
 
         if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
+        
         const shouldFetchMmr = await ControlPanel.getMMRDisplayState();
+        const excludeFilter = {
+          MMR: {
+            select: { mmrEffective: shouldFetchMmr },
+          },
+          access_token: false,
+          refresh_token: false,
+          token_type: false,
+          scope: false,
+          id_token: false,
+          session_state: false,
+        };
+        const fmExcludeFilter = {
+          include: {
+            Accounts: { include: { ...excludeFilter, mmr: false, MMR: false } },
+          },
+        };
 
         const includeParams = {
           PrimaryRiotAccount: {
-            include: {
-              MMR: {
-                select: { mmrEffective: shouldFetchMmr },
-              },
-              access_token: false,
-              refresh_token: false,
-            },
+            include: excludeFilter,
           },
           Accounts: {
-            include: {
-              MMR: {
-                select: { mmrEffective: shouldFetchMmr },
-              },
-              access_token: false,
-              refresh_token: false,
-            },
+            include: excludeFilter,
           },
           Status: true,
           Team: {
@@ -147,11 +152,11 @@ export class Player {
               Franchise: {
                 include: {
                   Brand: true,
-                  GM: { include: { Accounts: true } },
-                  AGM1: { include: { Accounts: true } },
-                  AGM2: { include: { Accounts: true } },
-                  AGM3: { include: { Accounts: true } },
-                  AGM4: { include: { Accounts: true } },
+                  GM: fmExcludeFilter,
+                  AGM1: fmExcludeFilter,
+                  AGM2: fmExcludeFilter,
+                  AGM3: fmExcludeFilter,
+                  AGM4: fmExcludeFilter
                 },
               },
             },
