@@ -121,11 +121,9 @@ export class Player {
         if (option == undefined) throw new Error(`Must specify exactly 1 option!`);
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
         
-        const shouldFetchMmr = await ControlPanel.getMMRDisplayState();
         const includeFilter = {
-          MMR: {
-            select: { mmrEffective: shouldFetchMmr },
-          },
+          MMR: true,
+          mmr: false,
           access_token: false,
           refresh_token: false,
           token_type: false,
@@ -133,6 +131,7 @@ export class Player {
           id_token: false,
           session_state: false,
         };
+
         const fmIncludeFilter = {
           include: {
             Accounts: { include: { ...includeFilter, mmr: false, MMR: false } },
@@ -156,7 +155,7 @@ export class Player {
                   AGM1: fmIncludeFilter,
                   AGM2: fmIncludeFilter,
                   AGM3: fmIncludeFilter,
-                  AGM4: fmIncludeFilter
+                  AGM4: fmIncludeFilter,
                 },
               },
             },
