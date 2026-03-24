@@ -122,7 +122,7 @@ export class Player {
         if (Object.keys(option).length > 1) throw new Error(`Must specify exactly 1 option!`);
         
         const shouldFetchMmr = await ControlPanel.getMMRDisplayState();
-        const excludeFilter = {
+        const includeFilter = {
           MMR: {
             select: { mmrEffective: shouldFetchMmr },
           },
@@ -133,18 +133,18 @@ export class Player {
           id_token: false,
           session_state: false,
         };
-        const fmExcludeFilter = {
+        const fmIncludeFilter = {
           include: {
-            Accounts: { include: { ...excludeFilter, mmr: false, MMR: false } },
+            Accounts: { include: { ...includeFilter, mmr: false, MMR: false } },
           },
         };
 
         const includeParams = {
           PrimaryRiotAccount: {
-            include: excludeFilter,
+            include: includeFilter,
           },
           Accounts: {
-            include: excludeFilter,
+            include: includeFilter,
           },
           Status: true,
           Team: {
@@ -152,11 +152,11 @@ export class Player {
               Franchise: {
                 include: {
                   Brand: true,
-                  GM: fmExcludeFilter,
-                  AGM1: fmExcludeFilter,
-                  AGM2: fmExcludeFilter,
-                  AGM3: fmExcludeFilter,
-                  AGM4: fmExcludeFilter
+                  GM: fmIncludeFilter,
+                  AGM1: fmIncludeFilter,
+                  AGM2: fmIncludeFilter,
+                  AGM3: fmIncludeFilter,
+                  AGM4: fmIncludeFilter
                 },
               },
             },
