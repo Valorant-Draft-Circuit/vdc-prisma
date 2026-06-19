@@ -121,6 +121,7 @@ CI **does not** generate migrations; it only plans and deploys committed ones.
 ## Database Changelog
 | Version | Comments/Updates |
 | - | - |
+| `v6.0.0` | Added Pickem tables (`PickemMatchPick`, `PickemAdvancePick`, `PickemGroup`, `PickemGroupMember`) and the `Transaction` table with the `TransactionType` enum, all with relevant relations to `User`, `Teams`, `Matches` & `Franchise` <br> Added `PICKEM_ADVANCE_LOCK`, `PICKEM_PREVIEW` & `PICKEM_ENABLED` control panel settings <br> Added `ACTIVATE` & `REBRAND` values to the `TransactionType` enum <br> Updated season defaults from `9` to `10` on the `Matches`, `Games` & `ModLogs` tables |
 | `v5.2.1` | Added optional `agm4ID` in the `Franchise` table and it's respective `AGM4` relation in the `User` table |
 | `5.2.0` | Added `banner` column to the `User` table |
 | `v5.1.0` | Added `RECRUIT` Tier to ENUM's, Updated Season Defaults to `9`, Added `MANUAL_REVIEW` to playerstatus ENUM |
