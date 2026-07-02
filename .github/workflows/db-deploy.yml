@@ -45,7 +45,7 @@ jobs:
 
   tag-and-release:
     name: Tag & Release (SemVer with PR override)
-    runs-on: ubuntu-latest
+    runs-on: uni-home
     needs: deploy-prod
     permissions:
       contents: write # create tags + releases
