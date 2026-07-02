@@ -1,0 +1,67 @@
+name: DB Connectivity Check
+
+on:
+  workflow_dispatch: {}
+
+env:
+  PRISMA_VERSION: ${{ vars.PRISMA_VERSION || '6.15.0' }}
+
+jobs:
+  check-dev:
+    name: Check DEV connection
+    runs-on: ubuntu-latest
+    environment: dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Verify DEV DB connection
+        env:
+          DATABASE_URL: ${{ secrets.DEV_DATABASE_URL }}
+        run: echo "SELECT 1;" | npx --yes prisma@${PRISMA_VERSION} db execute --url "$DATABASE_URL" --stdin
+
+  check-prod:
+    name: Check PROD connection
+    # Prod DB is IP-whitelisted; must run on the self-hosted runner with a static/allowed IP.
+    runs-on: uni-home
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Inspect SSL parameters in PROD_DATABASE_URL
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: |
+          node -e "
+            const u = new URL(process.env.DATABASE_URL);
+            const known = ['sslcert','sslidentity','sslpassword','sslaccept'];
+            const present = [...u.searchParams.keys()];
+            console.log('Query params present:', present.join(', ') || '(none)');
+            for (const k of known) {
+              if (u.searchParams.has(k)) console.log(' -', k, '=', u.searchParams.get(k));
+            }
+            const unknown = present.filter(k => !known.includes(k));
+            if (unknown.length) {
+              console.warn('WARNING: params not recognized by Prisma MySQL connector (will be silently ignored):', unknown.join(', '));
+              console.warn('Prisma expects one of: ' + known.join(', '));
+            }
+            const certPath = u.searchParams.get('sslcert');
+            if (certPath) {
+              const fs = require('fs');
+              const exists = fs.existsSync(certPath);
+              console.log('sslcert path \'' + certPath + '\' resolves on this runner:', exists);
+              if (!exists) { console.error('sslcert file not found at that path relative to ' + process.cwd()); process.exit(1); }
+            } else {
+              console.warn('WARNING: no sslcert param set — connection will not pin to certs/ca-certificate.crt');
+            }
+          "
+
+      - name: Verify PROD DB connection (TLS handshake + auth)
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL }}
+        run: echo "SELECT 1;" | npx --yes prisma@${PRISMA_VERSION} db execute --url "$DATABASE_URL" --stdin

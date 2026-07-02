@@ -29,7 +29,8 @@ jobs:
 
   deploy-prod:
     name: Deploy to PROD (manual gate)
-    runs-on: ubuntu-latest
+    # Prod DB is IP-whitelisted; must run on the self-hosted runner with an allowed IP.
+    runs-on: uni-home
     needs: deploy-dev
     environment: production # add required reviewers in repo settings
     steps:
@@ -45,7 +46,7 @@ jobs:
 
   tag-and-release:
     name: Tag & Release (SemVer with PR override)
-    runs-on: uni-home
+    runs-on: ubuntu-latest
     needs: deploy-prod
     permissions:
       contents: write # create tags + releases
