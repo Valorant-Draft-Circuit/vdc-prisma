@@ -1,5 +1,6 @@
-import { ContractStatus, LeagueStatus, PrismaClient, Tier } from '@prisma/client';
+import { ContractStatus, LeagueStatus, PrismaClient, Tier, TransactionType } from '@prisma/client';
 import { Player } from './_Player';
+import { ControlPanel } from './_ControlPanel';
 
 const prisma = new PrismaClient();
 
@@ -210,6 +211,32 @@ export class Transaction {
         return await prisma.matches.update({
             where: { matchID: matchID },
             data: { dateScheduled: newDate }
+        });
+    };
+
+    /** Record a transaction in the transactions history table. The current season is
+     * resolved internally, so callers only supply the transaction-specific columns. */
+    static async log(
+        options: {
+            type: TransactionType,
+            userID?: string | null,
+            teamID?: number | null,
+            franchiseID?: number | null,
+            tier?: Tier | null,
+            details?: object | null,
+        }
+    ) {
+        const season = await ControlPanel.getSeason();
+        return await prisma.transaction.create({
+            data: {
+                type: options.type,
+                season: season,
+                userID: options.userID ?? null,
+                team: options.teamID ?? null,
+                franchise: options.franchiseID ?? null,
+                tier: options.tier ?? null,
+                details: options.details ? JSON.stringify(options.details) : null,
+            }
         });
     };
 };

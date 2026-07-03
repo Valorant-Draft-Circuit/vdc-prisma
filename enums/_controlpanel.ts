@@ -27,4 +27,8 @@ export enum ControlPanelID {
     MAP_POOL                        = 21,
 
     WELCOME_MESSAGE                 = 22,
+
+    PICKEM_ADVANCE_LOCK             = 43,
+    PICKEM_PREVIEW                  = 44,
+    PICKEM_ENABLED                  = 45,
 }

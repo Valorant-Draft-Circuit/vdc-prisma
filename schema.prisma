@@ -41,35 +41,40 @@ model Session {
 }
 
 model User {
-  id                   String        @id @unique @default(cuid())
-  name                 String?
-  team                 Int?
-  primaryRiotAccountID String?       @unique
-  email                String?       @unique
-  emailVerified        DateTime?
-  image                String?
-  banner               String?
-  roles                String        @default("0x0")
-  flags                String        @default("0x0")
-  createdAt            DateTime      @default(now())
-  Accolades            Accolades[]
-  Accounts             Account[]     @relation("Accounts")
-  Draft                Draft[]       @relation("PlayerDraftPick")
-  AGM1                 Franchise?    @relation("AGM1")
-  AGM2                 Franchise?    @relation("AGM2")
-  AGM3                 Franchise?    @relation("AGM3")
-  AGM4                 Franchise?    @relation("AGM4")
-  GM                   Franchise?    @relation("GM")
-  ModLogs              ModLogs[]     @relation("ModHistory")
-  PlayerStats          PlayerStats[] @relation("UserPlayerStats")
-  Records              Records[]
-  sessions             Session[]
-  Status               Status?       @relation("PlayerStatus")
-  Substitute           Substitute[]  @relation("Sub")
-  SubbedOut            Substitute[]  @relation("Subbed")
-  Captain              Teams?        @relation("Captain")
-  PrimaryRiotAccount   Account?      @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
-  Team                 Teams?        @relation(fields: [team], references: [id])
+  id                     String              @id @unique @default(cuid())
+  name                   String?
+  team                   Int?
+  primaryRiotAccountID   String?             @unique
+  email                  String?             @unique
+  emailVerified          DateTime?
+  image                  String?
+  banner                 String?
+  roles                  String              @default("0x0")
+  flags                  String              @default("0x0")
+  createdAt              DateTime            @default(now())
+  Accolades              Accolades[]
+  Accounts               Account[]           @relation("Accounts")
+  Draft                  Draft[]             @relation("PlayerDraftPick")
+  AGM1                   Franchise?          @relation("AGM1")
+  AGM2                   Franchise?          @relation("AGM2")
+  AGM3                   Franchise?          @relation("AGM3")
+  AGM4                   Franchise?          @relation("AGM4")
+  GM                     Franchise?          @relation("GM")
+  ModLogs                ModLogs[]           @relation("ModHistory")
+  PlayerStats            PlayerStats[]       @relation("UserPlayerStats")
+  Records                Records[]
+  sessions               Session[]
+  Status                 Status?             @relation("PlayerStatus")
+  Substitute             Substitute[]        @relation("Sub")
+  SubbedOut              Substitute[]        @relation("Subbed")
+  Captain                Teams?              @relation("Captain")
+  PrimaryRiotAccount     Account?            @relation("PrimaryRiotAccount", fields: [primaryRiotAccountID], references: [providerAccountId])
+  Team                   Teams?              @relation(fields: [team], references: [id])
+  PickemMatchPicks       PickemMatchPick[]   @relation("UserPickemMatchPicks")
+  PickemAdvancePicks     PickemAdvancePick[] @relation("UserPickemAdvancePicks")
+  PickemGroupsOwned      PickemGroup[]       @relation("UserPickemGroupsOwned")
+  PickemGroupMemberships PickemGroupMember[] @relation("UserPickemGroupMemberships")
+  Transactions           Transaction[]       @relation("PlayerTransactions")
 
   @@index([team], map: "User_team_fkey")
 }
@@ -104,22 +109,24 @@ model Records {
 }
 
 model Teams {
-  id                 Int           @id @unique @default(autoincrement())
+  id                 Int                 @id @unique @default(autoincrement())
   name               String
   tier               Tier
-  active             Boolean       @default(true)
+  active             Boolean             @default(true)
   franchise          Int
-  captain            String?       @unique
+  captain            String?             @unique
   midSeasonPlacement Int?
-  GamesWon           Games[]       @relation("GamesWon")
+  GamesWon           Games[]             @relation("GamesWon")
   MapBans            MapBans[]
-  AwayMatches        Matches[]     @relation("AwayMatches")
-  HomeMatches        Matches[]     @relation("HomeMatches")
+  AwayMatches        Matches[]           @relation("AwayMatches")
+  HomeMatches        Matches[]           @relation("HomeMatches")
   PlayerStats        PlayerStats[]
   Substitutes        Substitute[]
-  Captain            User?         @relation("Captain", fields: [captain], references: [id])
-  Franchise          Franchise     @relation(fields: [franchise], references: [id])
+  Captain            User?               @relation("Captain", fields: [captain], references: [id])
+  Franchise          Franchise           @relation(fields: [franchise], references: [id])
   Roster             User[]
+  PickemAdvancePicks PickemAdvancePick[] @relation("PickemAdvancePicks")
+  Transactions       Transaction[]       @relation("TeamTransactions")
 
   @@index([franchise], map: "Teams_franchise_fkey")
 }
@@ -144,6 +151,7 @@ model Franchise {
   GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   Brand                 FranchiseBrand?
   Teams                 Teams[]
+  Transactions          Transaction[]   @relation("FranchiseTransactions")
 }
 
 model FranchiseBrand {
@@ -196,20 +204,21 @@ model Substitute {
 }
 
 model Matches {
-  matchID       Int          @id @unique @default(autoincrement())
-  tier          Tier
-  matchType     MatchType
-  dateScheduled DateTime
-  home          Int?
-  away          Int?
-  matchDay      Int?
-  season        Int          @default(9)
-  group         Int?
-  Games         Games[]
-  MapBans       MapBans[]
-  Away          Teams?       @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
-  Home          Teams?       @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
-  Substitutes   Substitute[]
+  matchID          Int               @id @unique @default(autoincrement())
+  tier             Tier
+  matchType        MatchType
+  dateScheduled    DateTime
+  home             Int?
+  away             Int?
+  matchDay         Int?
+  season           Int               @default(10)
+  group            Int?
+  Games            Games[]
+  MapBans          MapBans[]
+  Away             Teams?            @relation("AwayMatches", fields: [away], references: [id], map: "Away_Team")
+  Home             Teams?            @relation("HomeMatches", fields: [home], references: [id], map: "Home_Team")
+  Substitutes      Substitute[]
+  PickemMatchPicks PickemMatchPick[]
 
   @@index([away], map: "Away_Team")
   @@index([home], map: "Home_Team")
@@ -235,7 +244,7 @@ model Games {
   // Forfeits will submit a datetime as the unique ID, and fill in the gameType as FORFEIT
   // Invalid matches include matches that do NOT have ONLY VDC players in the database or out of tier matches
   matchID       Int?
-  season        Int           @default(9)
+  season        Int           @default(10)
   tier          Tier
   gameType      GameType
   datePlayed    DateTime
@@ -319,7 +328,7 @@ model ModLogs {
   id        Int        @id @unique @default(autoincrement())
   discordID String // this is the userID of the player who is being logged (Discord ID)
   modID     String // this is the userID of the mod who is logging (VDC ID)
-  season    Int        @default(9)
+  season    Int        @default(10)
   date      DateTime   @default(now())
   type      ModLogType
   message   String     @db.Text
@@ -352,6 +361,82 @@ model ApiAccess {
   active           Boolean @default(true)
   rateLimit        Int     @default(30) // Default to 30 requests/min
   allowedEndpoints String  @db.LongText // List of allowed endpoints
+}
+
+model PickemMatchPick {
+  id                 Int     @id @unique @default(autoincrement())
+  userID             String
+  matchID            Int
+  predictedHomeScore Int
+  predictedAwayScore Int
+  Player             User    @relation("UserPickemMatchPicks", fields: [userID], references: [id], onDelete: Cascade)
+  Match              Matches @relation(fields: [matchID], references: [matchID])
+
+  @@unique([userID, matchID])
+  @@index([userID], map: "PickemMatchPick_userID_fkey")
+  @@index([matchID], map: "PickemMatchPick_matchID_fkey")
+}
+
+model PickemAdvancePick {
+  id            Int    @id @unique @default(autoincrement())
+  userID        String
+  season        Int
+  tier          Tier
+  predictedTeam Int
+  predictedSeed Int // predicted seed position 1..N
+  Player        User   @relation("UserPickemAdvancePicks", fields: [userID], references: [id], onDelete: Cascade)
+  Team          Teams  @relation("PickemAdvancePicks", fields: [predictedTeam], references: [id])
+
+  @@unique([userID, season, tier, predictedTeam])
+  @@unique([userID, season, tier, predictedSeed])
+  @@index([userID], map: "PickemAdvancePick_userID_fkey")
+  @@index([predictedTeam], map: "PickemAdvancePick_predictedTeam_fkey")
+}
+
+model PickemGroup {
+  id       Int                 @id @unique @default(autoincrement())
+  name     String
+  image    String // agent UUID chosen by the owner; builds AGENTURL(image)
+  season   Int // a group is tied to one season (set by createGroup to the current season)
+  ownerID  String
+  joinCode String              @unique @default(cuid())
+  Owner    User                @relation("UserPickemGroupsOwned", fields: [ownerID], references: [id])
+  Members  PickemGroupMember[]
+
+  @@index([ownerID], map: "PickemGroup_ownerID_fkey")
+  @@index([season], map: "PickemGroup_season_idx")
+}
+
+model PickemGroupMember {
+  id      Int         @id @unique @default(autoincrement())
+  groupID Int
+  userID  String
+  Group   PickemGroup @relation(fields: [groupID], references: [id], onDelete: Cascade)
+  Player  User        @relation("UserPickemGroupMemberships", fields: [userID], references: [id], onDelete: Cascade)
+
+  @@unique([groupID, userID])
+  @@index([groupID], map: "PickemGroupMember_groupID_fkey")
+  @@index([userID], map: "PickemGroupMember_userID_fkey")
+}
+
+model Transaction {
+  id        Int             @id @unique @default(autoincrement())
+  type      TransactionType
+  season    Int
+  date      DateTime        @default(now())
+  userID    String?
+  team      Int?
+  franchise Int?
+  tier      Tier?
+  details   String?         @db.Text // type-specific payload (JSON or human-readable)
+  Player    User?           @relation("PlayerTransactions", fields: [userID], references: [id])
+  Team      Teams?          @relation("TeamTransactions", fields: [team], references: [id])
+  Franchise Franchise?      @relation("FranchiseTransactions", fields: [franchise], references: [id])
+
+  @@index([userID], map: "Transaction_userID_fkey")
+  @@index([team], map: "Transaction_team_fkey")
+  @@index([franchise], map: "Transaction_franchise_fkey")
+  @@index([season], map: "Transaction_season_idx")
 }
 
 enum Tier {
@@ -419,6 +504,24 @@ enum ModLogType {
 enum MapBansSide {
   ATTACK
   DEFENSE
+}
+
+enum TransactionType {
+  ACTIVATE
+  CAPTAIN
+  CUT
+  EXPIRE
+  IR
+  REBRAND
+  RENEW
+  RESCHEDULE
+  RETIRE
+  SCHEDULE_PLAYOFF
+  SIGN
+  SUB
+  TRADE
+  UNSUB
+  UPDATE_TIER
 }
 
 //TODO: Adding this comment to test workflow.  This can be deleted.
