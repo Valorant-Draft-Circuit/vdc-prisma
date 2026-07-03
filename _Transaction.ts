@@ -1,8 +1,6 @@
-import { ContractStatus, LeagueStatus, PrismaClient, Tier, TransactionType } from '@prisma/client';
-import { Player } from './_Player';
+import { ContractStatus, LeagueStatus, Tier, TransactionType } from '@prisma/client';
+import { prisma } from './prismadb';
 import { ControlPanel } from './_ControlPanel';
-
-const prisma = new PrismaClient();
 
 export class Transaction {
     static async updateStatus(
