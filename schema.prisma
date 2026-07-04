@@ -8,24 +8,23 @@ datasource db {
 }
 
 model Account {
-  id                String    @id @unique @default(cuid())
+  id                String  @id @unique @default(cuid())
   userId            String
   type              String
   provider          String
-  providerAccountId String    @unique
+  providerAccountId String  @unique
   refresh_token     String?
-  access_token      String?   @db.Text
+  access_token      String? @db.Text
   expires_at        Int?
   token_type        String?
   scope             String?
   id_token          String?
   session_state     String?
   riotIGN           String?
-  mmr               Int?      @unique
-  MMR               MMR?      @relation("MMR", fields: [mmr], references: [id], onDelete: Cascade)
-  User              User      @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
-  ModLogs           ModLogs[] @relation("ModLogs")
-  UserAccount       User?     @relation("PrimaryRiotAccount")
+  mmr               Int?    @unique
+  MMR               MMR?    @relation("MMR", fields: [mmr], references: [id], onDelete: Cascade)
+  User              User    @relation("Accounts", fields: [userId], references: [id], onDelete: Cascade)
+  UserAccount       User?   @relation("PrimaryRiotAccount")
 
   @@index([userId], map: "Account_userId_fkey")
 }
@@ -333,10 +332,9 @@ model ModLogs {
   type      ModLogType
   message   String     @db.Text
   expires   DateTime?
-  Player    Account    @relation("ModLogs", fields: [discordID], references: [providerAccountId])
   Moderator User       @relation("ModHistory", fields: [modID], references: [id])
 
-  @@index([discordID], map: "ModLogs_discordID_fkey")
+  @@index([discordID], map: "ModLogs_discordID_idx")
   @@index([modID], map: "ModLogs_modID_fkey")
 }
 
