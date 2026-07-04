@@ -4,7 +4,7 @@ import { prisma } from "./prismadb";
 /** Rows older than this never drive bot enforcement (mute cache, rejoin
  * re-mute, reconciliation, lift guards). Legacy Dyno-era records commonly
  * have NULL expires, which would otherwise read as active permanent
- * sanctions. They remain visible as dashboard/history data. */
+ * punishments. They remain visible as dashboard/history data. */
 export const MOD_TOOLS_EPOCH = new Date("2026-07-03T00:00:00Z");
 
 export class ModLogs {
@@ -28,7 +28,7 @@ export class ModLogs {
     });
   }
 
-  static async activeSanctions(type: ModLogType) {
+  static async activePunishments(type: ModLogType) {
     return await prisma.modLogs.findMany({
       where: {
         type,
@@ -38,7 +38,7 @@ export class ModLogs {
     });
   }
 
-  static async activeSanctionsFor(discordID: string, type: ModLogType) {
+  static async activePunishmentsFor(discordID: string, type: ModLogType) {
     return await prisma.modLogs.findMany({
       where: {
         discordID,
@@ -49,7 +49,7 @@ export class ModLogs {
     });
   }
 
-  static async everSanctioned(type: ModLogType) {
+  static async everPunished(type: ModLogType) {
     const rows = await prisma.modLogs.findMany({
       where: { type, date: { gte: MOD_TOOLS_EPOCH } },
       select: { discordID: true },
@@ -58,13 +58,13 @@ export class ModLogs {
     return rows.map((r) => r.discordID);
   }
 
-  static async liftSanctions(options: {
+  static async liftPunishments(options: {
     discordID: string;
     type: ModLogType;
     appealNote: string;
   }) {
     const { discordID, type, appealNote } = options;
-    const activeRows = await ModLogs.activeSanctionsFor(discordID, type);
+    const activeRows = await ModLogs.activePunishmentsFor(discordID, type);
     for (const row of activeRows) {
       await prisma.modLogs.update({
         where: { id: row.id },
