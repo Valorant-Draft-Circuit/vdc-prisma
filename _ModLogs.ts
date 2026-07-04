@@ -14,10 +14,56 @@ export class ModLogs {
     type: ModLogType;
     message: string;
     expires?: Date | null;
+    season?: number;
   }) {
-    const { discordID, modID, type, message, expires } = options;
+    const { discordID, modID, type, message, expires, season } = options;
     return await prisma.modLogs.create({
-      data: { discordID, modID, type, message, expires: expires ?? null },
+      data: {
+        discordID,
+        modID,
+        type,
+        message,
+        expires: expires ?? null,
+        ...(season !== undefined ? { season } : {}),
+      },
+    });
+  }
+
+  static async byId(id: number) {
+    return await prisma.modLogs.findUnique({
+      where: { id },
+      include: { Moderator: { select: { name: true } } },
+    });
+  }
+
+  /** Marker line appended to season-ban messages; visible on the dashboard
+   * and used by the reconciliation worker to find season bans. The row's
+   * `season` column stores the LAST season the ban covers. */
+  static seasonBanMarker(lastCoveredSeason: number) {
+    return `[Banned through Season ${lastCoveredSeason}]`;
+  }
+
+  /** Season bans (expires NULL + marker) whose last covered season has
+   * rolled past. */
+  static async staleSeasonBans(currentSeason: number) {
+    return await prisma.modLogs.findMany({
+      where: {
+        type: ModLogType.BAN,
+        expires: null,
+        date: { gte: MOD_TOOLS_EPOCH },
+        season: { lt: currentSeason },
+        message: { contains: `[Banned through Season ` },
+      },
+    });
+  }
+
+  /** Lift one specific row (season bans must not lift a coexisting perm ban). */
+  static async liftPunishmentRow(id: number, note: string) {
+    const row = await prisma.modLogs.findUnique({ where: { id } });
+    if (!row) return;
+    await prisma.modLogs.update({
+      where: { id },
+      data: { expires: new Date(), message: `${row.message}\n${note}` },
     });
   }
 
