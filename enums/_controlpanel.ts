@@ -31,5 +31,4 @@ export enum ControlPanelID {
     PICKEM_ADVANCE_LOCK             = 43,
     PICKEM_PREVIEW                  = 44,
     PICKEM_ENABLED                  = 45,
-    PICKEM_BRACKET_LOCK             = 46,
 }

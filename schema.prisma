@@ -71,7 +71,6 @@ model User {
   Team                   Teams?              @relation(fields: [team], references: [id])
   PickemMatchPicks       PickemMatchPick[]   @relation("UserPickemMatchPicks")
   PickemAdvancePicks     PickemAdvancePick[] @relation("UserPickemAdvancePicks")
-  PickemBracketPicks     PickemBracketPick[] @relation("UserPickemBracketPicks")
   PickemGroupsOwned      PickemGroup[]       @relation("UserPickemGroupsOwned")
   PickemGroupMemberships PickemGroupMember[] @relation("UserPickemGroupMemberships")
   Transactions           Transaction[]       @relation("PlayerTransactions")
@@ -126,7 +125,6 @@ model Teams {
   Franchise          Franchise           @relation(fields: [franchise], references: [id])
   Roster             User[]
   PickemAdvancePicks PickemAdvancePick[] @relation("PickemAdvancePicks")
-  PickemBracketPicks PickemBracketPick[] @relation("PickemBracketPicks")
   Transactions       Transaction[]       @relation("TeamTransactions")
 
   @@index([franchise], map: "Teams_franchise_fkey")
@@ -391,24 +389,6 @@ model PickemAdvancePick {
   @@unique([userID, season, tier, predictedSeed])
   @@index([userID], map: "PickemAdvancePick_userID_fkey")
   @@index([predictedTeam], map: "PickemAdvancePick_predictedTeam_fkey")
-}
-
-model PickemBracketPick {
-  id                  Int    @id @unique @default(autoincrement())
-  userID              String
-  season              Int
-  tier                Tier
-  round               Int 
-  slot                Int 
-  predictedTeam       Int
-  predictedLoserGames Int 
-  Player              User   @relation("UserPickemBracketPicks", fields: [userID], references: [id], onDelete: Cascade)
-  Team                Teams  @relation("PickemBracketPicks", fields: [predictedTeam], references: [id])
-
-  @@unique([userID, season, tier, round, slot])
-  @@index([userID], map: "PickemBracketPick_userID_fkey")
-  @@index([predictedTeam], map: "PickemBracketPick_predictedTeam_fkey")
-  @@index([season, tier], map: "PickemBracketPick_season_tier_idx")
 }
 
 model PickemGroup {
