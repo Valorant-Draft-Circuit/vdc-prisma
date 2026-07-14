@@ -15,8 +15,10 @@ export class ModLogs {
     message: string;
     expires?: Date | null;
     season?: number;
+    details?: object | null;
   }) {
-    const { discordID, modID, type, message, expires, season } = options;
+    const { discordID, modID, type, message, expires, season, details } =
+      options;
     return await prisma.modLogs.create({
       data: {
         discordID,
@@ -24,6 +26,7 @@ export class ModLogs {
         type,
         message,
         expires: expires ?? null,
+        details: details ? JSON.stringify(details) : null,
         ...(season !== undefined ? { season } : {}),
       },
     });
@@ -92,6 +95,27 @@ export class ModLogs {
         date: { gte: MOD_TOOLS_EPOCH },
         OR: [{ expires: null }, { expires: { gt: new Date() } }],
       },
+    });
+  }
+
+  /** All MAP_BAN rows for a player since the mod-tools epoch, oldest first.
+   * "Active" cannot be a where-clause: remaining maps are derived from played
+   * games, so callers compute remaining per row (src/helpers/mod/mapBans.js). */
+  static async mapBansFor(discordID: string) {
+    return await prisma.modLogs.findMany({
+      where: {
+        discordID,
+        type: ModLogType.MAP_BAN,
+        date: { gte: MOD_TOOLS_EPOCH },
+      },
+      orderBy: { date: `asc` },
+    });
+  }
+
+  static async updateDetails(id: number, details: object) {
+    return await prisma.modLogs.update({
+      where: { id },
+      data: { details: JSON.stringify(details) },
     });
   }
 

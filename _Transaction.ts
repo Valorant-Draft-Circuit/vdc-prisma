@@ -135,6 +135,36 @@ export class Transaction {
         });
     };
 
+    /** Mark the player a substitute replaced as SUBBED_OUT so vdc-web can pair them.
+     * Only transitions from SIGNED so an IR (or otherwise changed) status is never overwritten. */
+    static async markSubbedOut(userID: string) {
+        return await prisma.status.updateMany({
+            where: { userID: userID, contractStatus: ContractStatus.SIGNED },
+            data: { contractStatus: ContractStatus.SUBBED_OUT }
+        });
+    };
+
+    /** Restore a replaced player to SIGNED when their substitute's stint ends.
+     * Only transitions from SUBBED_OUT so an admin-changed status is never overwritten. */
+    static async restoreSubbedOut(userID: string) {
+        return await prisma.status.updateMany({
+            where: { userID: userID, contractStatus: ContractStatus.SUBBED_OUT },
+            data: { contractStatus: ContractStatus.SIGNED }
+        });
+    };
+
+    /** Get the most recent SUB transaction for a sub on a team (its details carry the pairing) */
+    static async getLatestSub(options: { userID: string, teamID: number }) {
+        return await prisma.transaction.findFirst({
+            where: {
+                type: TransactionType.SUB,
+                userID: options.userID,
+                team: options.teamID
+            },
+            orderBy: { id: `desc` }
+        });
+    };
+    
     /** Unsub a player for a team */
     static async unsub(userID: string) {
         return await prisma.user.update({
