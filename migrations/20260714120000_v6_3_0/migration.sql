@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `ModLogs` ADD COLUMN `details` TEXT NULL;
+
+-- AlterEnum
+ALTER TABLE `ModLogs` MODIFY `type` ENUM('NOTE', 'INFORMAL_WARNING', 'FORMAL_WARNING', 'MUTE', 'BAN', 'MAP_BAN') NOT NULL;
