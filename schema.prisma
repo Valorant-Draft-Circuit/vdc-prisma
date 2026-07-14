@@ -333,6 +333,7 @@ model ModLogs {
   date      DateTime   @default(now())
   type      ModLogType
   message   String     @db.Text
+  details   String?    @db.Text // type-specific payload (JSON), mirrors Transaction.details
   expires   DateTime?
   Moderator User       @relation("ModHistory", fields: [modID], references: [id])
 
@@ -398,10 +399,10 @@ model PickemBracketPick {
   userID              String
   season              Int
   tier                Tier
-  round               Int 
-  slot                Int 
+  round               Int
+  slot                Int
   predictedTeam       Int
-  predictedLoserGames Int 
+  predictedLoserGames Int
   Player              User   @relation("UserPickemBracketPicks", fields: [userID], references: [id], onDelete: Cascade)
   Team                Teams  @relation("PickemBracketPicks", fields: [predictedTeam], references: [id])
 
@@ -517,6 +518,7 @@ enum ModLogType {
   FORMAL_WARNING
   MUTE
   BAN
+  MAP_BAN
 }
 
 enum MapBansSide {
