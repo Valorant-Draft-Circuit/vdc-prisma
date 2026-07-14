@@ -123,6 +123,15 @@ export class ModLogs {
     });
   }
 
+  static async appendNote(id: number, note: string) {
+    const row = await prisma.modLogs.findUnique({ where: { id } });
+    if (!row) return;
+    await prisma.modLogs.update({
+      where: { id },
+      data: { message: `${row.message}\n${note}` },
+    });
+  }
+
   static async updateDetails(id: number, details: object) {
     return await prisma.modLogs.update({
       where: { id },
