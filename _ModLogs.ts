@@ -112,6 +112,17 @@ export class ModLogs {
     });
   }
 
+  /** Every MAP_BAN row since the mod-tools epoch (for the served-ban sweep). */
+  static async allMapBans() {
+    return await prisma.modLogs.findMany({
+      where: {
+        type: ModLogType.MAP_BAN,
+        date: { gte: MOD_TOOLS_EPOCH },
+      },
+      orderBy: { date: `asc` },
+    });
+  }
+
   static async updateDetails(id: number, details: object) {
     return await prisma.modLogs.update({
       where: { id },
