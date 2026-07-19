@@ -32,4 +32,9 @@ export enum ControlPanelID {
     PICKEM_PREVIEW                  = 44,
     PICKEM_ENABLED                  = 45,
     PICKEM_BRACKET_LOCK             = 46,
+
+    WEB_MAPBANS_ENABLED             = 47,
+    WEB_MAPBANS_STAFF_ONLY          = 48,
+    WEB_MAPBANS_ALLOWLIST           = 49,
+    WEB_MAPBANS_PAGER_MINUTES       = 50,
 }

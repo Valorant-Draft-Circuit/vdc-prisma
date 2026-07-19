@@ -233,6 +233,8 @@ model MapBans {
   team    Int?
   map     String?
   side    MapBansSide?
+  source  VetoSource?
+  vetoUrl String?
   Match   Matches      @relation(fields: [matchID], references: [matchID])
   Team    Teams?       @relation(fields: [team], references: [id])
 
@@ -339,6 +341,15 @@ model ModLogs {
 
   @@index([discordID], map: "ModLogs_discordID_idx")
   @@index([modID], map: "ModLogs_modID_fkey")
+}
+
+model ProfileView {
+  id            Int      @id @default(autoincrement())
+  profileUserID String
+  viewerUserID  String
+  viewedAt      DateTime @default(now())
+
+  @@index([profileUserID, viewerUserID, viewedAt])
 }
 
 model FAQ {
@@ -524,6 +535,11 @@ enum ModLogType {
 enum MapBansSide {
   ATTACK
   DEFENSE
+}
+
+enum VetoSource {
+  BOT
+  WEB
 }
 
 enum TransactionType {
