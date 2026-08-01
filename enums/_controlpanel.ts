@@ -37,4 +37,12 @@ export enum ControlPanelID {
     WEB_MAPBANS_STAFF_ONLY          = 48,
     WEB_MAPBANS_ALLOWLIST           = 49,
     WEB_MAPBANS_PAGER_MINUTES       = 50,
+
+    PLAYOFF_ODDS_ENABLED            = 51,
+
+    MATCH_POLLER_ENABLED            = 52,
+    MATCH_POLLER_ALLOWLIST          = 53,
+    MATCH_POLLER_INTERVAL_MS        = 54,
+    MATCH_POLLER_START_DELAY_MS     = 55,
+    MATCH_POLLER_GIVEUP_MS          = 56,
 }
