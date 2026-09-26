@@ -156,6 +156,7 @@ export class Player {
                   AGM2: fmIncludeFilter,
                   AGM3: fmIncludeFilter,
                   AGM4: fmIncludeFilter,
+                  AGM5: fmIncludeFilter,
                 },
               },
             },

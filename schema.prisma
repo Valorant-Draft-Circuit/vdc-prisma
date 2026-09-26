@@ -143,12 +143,14 @@ model Franchise {
   agm2ID                String?         @unique
   agm3ID                String?         @unique
   agm4ID                String?         @unique
+  agm5ID                String?         @unique
   transactionsChannelID String?
   DraftPicks            Draft[]
   AGM1                  User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
   AGM2                  User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
   AGM3                  User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
   AGM4                  User?           @relation("AGM4", fields: [agm4ID], references: [id], map: "Franchise_AGM4")
+  AGM5                  User?           @relation("AGM5", fields: [agm5ID], references: [id], map: "Franchise_AGM5")
   GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   Brand                 FranchiseBrand?
   Teams                 Teams[]
@@ -273,6 +275,7 @@ model PlayerStats {
   // Use enums - ex. Agent.Chamber
   ratingAttack  Float?
   ratingDefense Float?
+  performance   Int?
   acs           Int?
   hsPercent     Float?
   kills         Int?
@@ -474,6 +477,7 @@ enum Tier {
   PROSPECT
   APPRENTICE
   EXPERT
+  LEGEND
   MYTHIC
   MIXED
   // Used in non-tier bound combines

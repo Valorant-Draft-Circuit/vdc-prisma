@@ -16,7 +16,7 @@ export enum Flags {
 
     ACTIVE_LAST_SEASON          = 0x00001,
     ACTIVE_IN_PAST              = 0x00002,
-    /** @RESERVED               = 0x00004 */
+    RANKED_BYPASS               = 0x00004,
     /** @RESERVED               = 0x00008 */
     /** @RESERVED               = 0x00010 */
     /** @RESERVED               = 0x00020 */
