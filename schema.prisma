@@ -58,6 +58,7 @@ model User {
   AGM2                   Franchise?          @relation("AGM2")
   AGM3                   Franchise?          @relation("AGM3")
   AGM4                   Franchise?          @relation("AGM4")
+  AGM5                   Franchise?          @relation("AGM5")
   GM                     Franchise?          @relation("GM")
   ModLogs                ModLogs[]           @relation("ModHistory")
   PlayerStats            PlayerStats[]       @relation("UserPlayerStats")
