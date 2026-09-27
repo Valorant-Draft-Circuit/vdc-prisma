@@ -58,6 +58,7 @@ model User {
   AGM2                   Franchise?          @relation("AGM2")
   AGM3                   Franchise?          @relation("AGM3")
   AGM4                   Franchise?          @relation("AGM4")
+  AGM5                   Franchise?          @relation("AGM5")
   GM                     Franchise?          @relation("GM")
   ModLogs                ModLogs[]           @relation("ModHistory")
   PlayerStats            PlayerStats[]       @relation("UserPlayerStats")
@@ -143,12 +144,14 @@ model Franchise {
   agm2ID                String?         @unique
   agm3ID                String?         @unique
   agm4ID                String?         @unique
+  agm5ID                String?         @unique
   transactionsChannelID String?
   DraftPicks            Draft[]
   AGM1                  User?           @relation("AGM1", fields: [agm1ID], references: [id], map: "Franchise_AGM1")
   AGM2                  User?           @relation("AGM2", fields: [agm2ID], references: [id], map: "Franchise_AGM2")
   AGM3                  User?           @relation("AGM3", fields: [agm3ID], references: [id], map: "Franchise_AGM3")
   AGM4                  User?           @relation("AGM4", fields: [agm4ID], references: [id], map: "Franchise_AGM4")
+  AGM5                  User?           @relation("AGM5", fields: [agm5ID], references: [id], map: "Franchise_AGM5")
   GM                    User?           @relation("GM", fields: [gmID], references: [id], map: "Franchise_GM")
   Brand                 FranchiseBrand?
   Teams                 Teams[]
@@ -212,7 +215,7 @@ model Matches {
   home             Int?
   away             Int?
   matchDay         Int?
-  season           Int               @default(10)
+  season           Int               @default(11)
   group            Int?
   Games            Games[]
   MapBans          MapBans[]
@@ -247,7 +250,7 @@ model Games {
   // Forfeits will submit a datetime as the unique ID, and fill in the gameType as FORFEIT
   // Invalid matches include matches that do NOT have ONLY VDC players in the database or out of tier matches
   matchID       Int?
-  season        Int           @default(10)
+  season        Int           @default(11)
   tier          Tier
   gameType      GameType
   datePlayed    DateTime
@@ -273,6 +276,7 @@ model PlayerStats {
   // Use enums - ex. Agent.Chamber
   ratingAttack  Float?
   ratingDefense Float?
+  performance   Int?
   acs           Int?
   hsPercent     Float?
   kills         Int?
@@ -331,7 +335,7 @@ model ModLogs {
   id        Int        @id @unique @default(autoincrement())
   discordID String // this is the userID of the player who is being logged (Discord ID)
   modID     String // this is the userID of the mod who is logging (VDC ID)
-  season    Int        @default(10)
+  season    Int        @default(11)
   date      DateTime   @default(now())
   type      ModLogType
   message   String     @db.Text
@@ -474,6 +478,7 @@ enum Tier {
   PROSPECT
   APPRENTICE
   EXPERT
+  LEGEND
   MYTHIC
   MIXED
   // Used in non-tier bound combines

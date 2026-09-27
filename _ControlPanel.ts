@@ -41,6 +41,7 @@ export class ControlPanel {
             const prospectMMRCap = response.find((r) => r.name === `prospect_mmr_cap_player`)?.value;
             const apprenticeMMRCap = response.find((r) => r.name === `apprentice_mmr_cap_player`)?.value;
             const expertMMRCap = response.find((r) => r.name === `expert_mmr_cap_player`)?.value;
+            const legendMMRCap = response.find((r) => r.name === `legend_mmr_cap_player`)?.value;
 
             return {
                 // read line 39
@@ -48,7 +49,8 @@ export class ControlPanel {
                 PROSPECT: { min: Number(recruitMMRCap) + 1, max: Number(prospectMMRCap) },
                 APPRENTICE: { min: Number(prospectMMRCap) + 1, max: Number(apprenticeMMRCap) },
                 EXPERT: { min: Number(apprenticeMMRCap) + 1, max: Number(expertMMRCap) },
-                MYTHIC: { min: Number(expertMMRCap) + 1, max: 999 },
+                LEGEND: { min: Number(expertMMRCap) + 1, max: Number(legendMMRCap) },
+                MYTHIC: { min: Number(legendMMRCap) + 1, max: 999 },
             }
         } else {
             // get MMR tier lines from the database
@@ -61,6 +63,7 @@ export class ControlPanel {
             const prospectMMRCap = response.find((r) => r.name === `prospect_mmr_cap_team`)?.value;
             const apprenticeMMRCap = response.find((r) => r.name === `apprentice_mmr_cap_team`)?.value;
             const expertMMRCap = response.find((r) => r.name === `expert_mmr_cap_team`)?.value;
+            const legendMMRCap = response.find((r) => r.name === `legend_mmr_cap_team`)?.value;
             const mythicMMRCap = response.find((r) => r.name === `mythic_mmr_cap_team`)?.value;
 
             return {
@@ -69,6 +72,7 @@ export class ControlPanel {
                 PROSPECT: Number(prospectMMRCap),
                 APPRENTICE: Number(apprenticeMMRCap),
                 EXPERT: Number(expertMMRCap),
+                LEGEND: Number(legendMMRCap),
                 MYTHIC: Number(mythicMMRCap),
             }
         }
